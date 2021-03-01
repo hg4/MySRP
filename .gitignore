@@ -21,7 +21,12 @@
 
 # Visual Studio cache directory
 .vs/
-
+library/
+Logs/
+obj/
+ProjectSettings/
+UserSettings/
+Packages/
 # Gradle cache directory
 .gradle/
 
