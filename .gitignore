@@ -23,6 +23,7 @@
 .vs/
 library/
 Logs/
+Temp/
 obj/
 ProjectSettings/
 UserSettings/
