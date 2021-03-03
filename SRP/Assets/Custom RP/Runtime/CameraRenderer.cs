@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-public class CameraRenderer
+public partial class CameraRenderer
 {
     ScriptableRenderContext _context;
     Camera _cam;
@@ -11,22 +11,17 @@ public class CameraRenderer
     CommandBuffer _buffer = new CommandBuffer { name = _bufferName };
     CullingResults _cullingResults;
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-    static ShaderTagId[] legacyShaderTagIds = {
-        new ShaderTagId("Always"),
-        new ShaderTagId("ForwardBase"),
-        new ShaderTagId("PrepassBase"),
-        new ShaderTagId("Vertex"),
-        new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM")
-    };
-    static Material errorMaterial;
+  
     public void Render(ScriptableRenderContext context,Camera camera)
     {
         _context = context;
         _cam = camera;
+        PrepareBuffer();
+        PrepareForSceneWindow();
         if (!TryCull()) return;
         Setup();//init some status in context
         DrawVisibleGeometry();//draw command in context
+        DrawGizmos();//draw Gizmos when actived after everything else
         Submit();//submit buffered command in context
     }
 
@@ -35,7 +30,7 @@ public class CameraRenderer
         _context.SetupCameraProperties(_cam);//set camera VP matrix to context status,we should setup camera before
                                              //renderTarget clear because renderTarget is bind with camera.
         _buffer.ClearRenderTarget(true, true, Color.clear);//clear render target before sample command group begins
-        _buffer.BeginSample(_bufferName);//a function adding command to buffer,which named a sample command group
+        _buffer.BeginSample(SampleName);//a function adding command to buffer,which named a sample command group
         ExecuteBuffer();
         
     }
@@ -60,7 +55,7 @@ public class CameraRenderer
     }
     private void Submit()
     {
-        _buffer.EndSample(_bufferName);
+        _buffer.EndSample(SampleName);
         ExecuteBuffer();
         _context.Submit();
     }
@@ -72,28 +67,7 @@ public class CameraRenderer
         _buffer.Clear();
     }
 
-    void DrawUnsupportedShaders()
-    {
-        if (errorMaterial == null)
-        {
-            errorMaterial =
-                new Material(Shader.Find("Hidden/InternalErrorShader"));
-        }
-        var drawingSettings = new DrawingSettings(
-            legacyShaderTagIds[0], new SortingSettings(_cam)
-        )
-        {
-            overrideMaterial = errorMaterial
-        };
-        for (int i = 1; i < legacyShaderTagIds.Length; i++)
-        {
-            drawingSettings.SetShaderPassName(i, legacyShaderTagIds[i]);
-        }
-        var filteringSettings = FilteringSettings.defaultValue;
-        _context.DrawRenderers(
-            _cullingResults, ref drawingSettings, ref filteringSettings
-        );
-    }
+   
 
     bool TryCull()
     {
