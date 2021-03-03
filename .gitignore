@@ -23,10 +23,10 @@
 .vs/
 library/
 Logs/
-Temp/
 obj/
 ProjectSettings/
 UserSettings/
+Temp/
 Packages/
 # Gradle cache directory
 .gradle/

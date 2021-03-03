@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 partial class CameraRenderer
 {
@@ -24,7 +25,9 @@ partial class CameraRenderer
     string SampleName { get; set; }
     partial void PrepareBuffer()
     {
+        Profiler.BeginSample("Editor Only");
         _buffer.name = SampleName = _cam.name;
+        Profiler.EndSample();
     }
 #else
     const string SampleName = _bufferName;

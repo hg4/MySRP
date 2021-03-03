@@ -27,9 +27,12 @@ public partial class CameraRenderer
 
     private void Setup()
     {
+        CameraClearFlags flags = _cam.clearFlags;
         _context.SetupCameraProperties(_cam);//set camera VP matrix to context status,we should setup camera before
-                                             //renderTarget clear because renderTarget is bind with camera.
-        _buffer.ClearRenderTarget(true, true, Color.clear);//clear render target before sample command group begins
+                                             //renderTarget clear because renderTarget is bind with camera
+        //to use secondary camera only to show legacy shader object, we determines whether clear renderTarget by camera's clear flag,which get different mixed effect by two camera.
+        _buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color,
+                flags == CameraClearFlags.Color ? _cam.backgroundColor.linear : Color.clear);//clear render target before sample command group begins
         _buffer.BeginSample(SampleName);//a function adding command to buffer,which named a sample command group
         ExecuteBuffer();
         
