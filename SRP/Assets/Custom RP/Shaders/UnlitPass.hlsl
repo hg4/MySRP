@@ -1,14 +1,28 @@
 #ifndef CUSTOM_UNLIT_PASS
 #define CUSTOM_UNLIT_PASS
 #include "../ShaderLibrary/Common.hlsl"
-float4 UnlitPassVertex(float3 positionOS : POSITION) : SV_Position
+
+
+
+
+Varyings UnlitPassVertex(Attributes input)
 {
-    float3 positionWS = TransformObjectToWorld(positionOS);
-    return TransformWorldToHClip(positionWS);
+    Varyings output;
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input,output);
+    float3 positionWS = TransformObjectToWorld(input.positionOS);
+    output.positionCS = TransformWorldToHClip(positionWS);
+    output.uv = input.uv;
+    return output;
 }
 
-float4 UnlitPassFragment() : SV_Target
+float4 UnlitPassFragment(Varyings input) : SV_Target
 {
-    return 0.0;
+    UNITY_SETUP_INSTANCE_ID(input);
+    float4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+    #ifdef _CLIPPING
+        clip(col.a-UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CutOff));
+    #endif
+    return col*UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 }
 #endif

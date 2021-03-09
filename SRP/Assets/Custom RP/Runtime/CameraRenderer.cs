@@ -10,9 +10,10 @@ public partial class CameraRenderer
     const string _bufferName = "Render camera";
     CommandBuffer _buffer = new CommandBuffer { name = _bufferName };
     CullingResults _cullingResults;
-    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-  
-    public void Render(ScriptableRenderContext context,Camera camera)
+    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+                       litShaderTagId = new ShaderTagId("CustomLit");
+    Lighting lighting = new Lighting();
+    public void Render(ScriptableRenderContext context,Camera camera,bool useGPUInstancing)
     {
         _context = context;
         _cam = camera;
@@ -20,7 +21,8 @@ public partial class CameraRenderer
         PrepareForSceneWindow();
         if (!TryCull()) return;
         Setup();//init some status in context
-        DrawVisibleGeometry();//draw command in context
+        lighting.Setup(context,_cullingResults);
+        DrawVisibleGeometry(useGPUInstancing);//draw command in context
         DrawGizmos();//draw Gizmos when actived after everything else
         Submit();//submit buffered command in context
     }
@@ -33,11 +35,11 @@ public partial class CameraRenderer
         //to use secondary camera only to show legacy shader object, we determines whether clear renderTarget by camera's clear flag,which get different mixed effect by two camera.
         _buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color,
                 flags == CameraClearFlags.Color ? _cam.backgroundColor.linear : Color.clear);//clear render target before sample command group begins
-        _buffer.BeginSample(SampleName);//a function adding command to buffer,which named a sample command group
+        _buffer.BeginSample(SampleName);//This is useful for measuring CPU and GPU time spent by one or more commands in the command buffer.
         ExecuteBuffer();
         
     }
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useGPUInstancing)
     {
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         var sortingSettings = new SortingSettings(_cam)
@@ -47,11 +49,13 @@ public partial class CameraRenderer
         var drawingSettings = new DrawingSettings(
             unlitShaderTagId, sortingSettings
         );
+        drawingSettings.SetShaderPassName(1, litShaderTagId);//add shader lightmode which this draw call can render
         _context.DrawRenderers(_cullingResults,ref drawingSettings, ref filteringSettings);
         DrawUnsupportedShaders();
         _context.DrawSkybox(_cam);
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
+        drawingSettings.enableInstancing = useGPUInstancing;
         filteringSettings.renderQueueRange = RenderQueueRange.transparent;
         _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
 

@@ -7,8 +7,9 @@ using UnityEngine.Rendering;
 public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
     // Start is called before the first frame update
+    public bool useGPUInstancing=true, useSRPBatcher=true;
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderingPipeline();
+        return new CustomRenderingPipeline(useGPUInstancing,useSRPBatcher);
     }
 }
