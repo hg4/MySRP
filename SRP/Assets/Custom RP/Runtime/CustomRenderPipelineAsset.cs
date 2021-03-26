@@ -8,8 +8,9 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
     // Start is called before the first frame update
     public bool useGPUInstancing=true, useSRPBatcher=true;
+    public ShadowSettings shadows = default;
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderingPipeline(useGPUInstancing,useSRPBatcher);
+        return new CustomRenderingPipeline(useGPUInstancing,useSRPBatcher, shadows);
     }
 }

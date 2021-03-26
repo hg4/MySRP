@@ -13,17 +13,23 @@ public partial class CameraRenderer
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
                        litShaderTagId = new ShaderTagId("CustomLit");
     Lighting lighting = new Lighting();
-    public void Render(ScriptableRenderContext context,Camera camera,bool useGPUInstancing)
+    public void Render(ScriptableRenderContext context,Camera camera,bool useGPUInstancing, ShadowSettings shadowSettings)
     {
         _context = context;
         _cam = camera;
-        PrepareBuffer();
-        PrepareForSceneWindow();
-        if (!TryCull()) return;
+        //PrepareBuffer();
+        //PrepareForSceneWindow();
+        if (!TryCull(shadowSettings)) return;
+        _buffer.BeginSample(SampleName);//add sample cmd to buffer
+        ExecuteBuffer();//execute sample cmd. 只有在BeginSample函数被命令缓冲送去执行后会开启采样状态，在他执行后被送去执行的函数命令才会被sample记录
+        lighting.Setup(context, _cullingResults, shadowSettings);//sampled by 'render camera' buffer.
+        _buffer.EndSample(SampleName);//add end sample cmd to buffer
+        
         Setup();//init some status in context
-        lighting.Setup(context,_cullingResults);
+        
         DrawVisibleGeometry(useGPUInstancing);//draw command in context
         DrawGizmos();//draw Gizmos when actived after everything else
+        lighting.CleanUp();
         Submit();//submit buffered command in context
     }
 
@@ -76,11 +82,12 @@ public partial class CameraRenderer
 
    
 
-    bool TryCull()
+    bool TryCull(ShadowSettings shadowSettings)
     {
         //try to get parameter and culling, Returns false if camera is invalid to render (empty viewport rectangle, invalid clip plane setup etc.).
         if (_cam.TryGetCullingParameters(out ScriptableCullingParameters p))
         {
+            p.shadowDistance = Math.Min(shadowSettings.maxDistance,_cam.farClipPlane);
             _cullingResults = _context.Cull(ref p);
             //ref keyword can treat as pointer in C++,which pass parameter's reference,
             //here parameter p is a reference type(treat as pointer),so ref p means pointer's pointer classtype** p.
