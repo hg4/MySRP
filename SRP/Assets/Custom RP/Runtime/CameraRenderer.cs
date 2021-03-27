@@ -55,6 +55,7 @@ public partial class CameraRenderer
         var drawingSettings = new DrawingSettings(
             unlitShaderTagId, sortingSettings
         );
+        drawingSettings.perObjectData = PerObjectData.Lightmaps;
         drawingSettings.SetShaderPassName(1, litShaderTagId);//add shader lightmode which this draw call can render
         _context.DrawRenderers(_cullingResults,ref drawingSettings, ref filteringSettings);
         DrawUnsupportedShaders();

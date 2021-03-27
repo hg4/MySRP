@@ -1,6 +1,7 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
 #include "../ShaderLibrary/Common.hlsl"
+#include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 Varyings LitPassVertex(Attributes input)
@@ -8,6 +9,7 @@ Varyings LitPassVertex(Attributes input)
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
+    TRANSFER_GI_DATA(input, output);
     output.positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -41,7 +43,8 @@ float4 LitPassFragment(Varyings input) : SV_Target
     surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surface.roughness = Square(UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Roughness));
     BRDF brdf = GetBRDF(surface);
-    float3 color = GetLighting(surface,brdf);
+    GI gi = GetGI(GI_FRAGMENT_DATA(input));
+    float3 color = GetLighting(surface,brdf,gi);
     //float4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 #ifdef _CLIPPING
         clip(col.a-UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CutOff));

@@ -2,6 +2,7 @@
 #define CUSTOM_LIGHTING_INCLUDED
 #define AMBIENT_FACTOR 0.03
 #include "common.hlsl"
+#include "GI.hlsl"
 #include "Surface.hlsl"
 #include "Shadows.hlsl"
 #include "Light.hlsl"
@@ -55,7 +56,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light) * BRDF_Lit(surface, brdf, light) + GetAmbient(surface);
 }
 
-float3 GetLighting(Surface surface, BRDF brdf)
+float3 GetLighting(Surface surface, BRDF brdf,GI gi)
 {
     float3 finalColor;
     for (int i = 0; i < _DirectionalLightCount; i++)
@@ -64,7 +65,7 @@ float3 GetLighting(Surface surface, BRDF brdf)
         Light light = GetDirectionalLight(i,surface,shadowData);
         finalColor += GetLighting(surface, brdf, light);
     }
-       
+    finalColor = gi.diffuse;
     return finalColor;
 }
 
