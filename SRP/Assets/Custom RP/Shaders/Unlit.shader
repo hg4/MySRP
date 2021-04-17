@@ -3,7 +3,7 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _BaseColor("main color",COLOR) = (1.0,1.0,1.0,1.0)
+        [HDR] _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend ("Src Blend", Float) = 1
 		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend ("Dst Blend", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
@@ -14,7 +14,10 @@
     {
         Tags { "RenderType"="Opaque" }
         LOD 100
-
+        HLSLINCLUDE
+        #include "../ShaderLibrary/Common.hlsl"
+        #include "../ShaderLibrary/UnlitInput.hlsl"
+        ENDHLSL
         Pass
         {
             Blend [_SrcBlend] [_DstBlend]

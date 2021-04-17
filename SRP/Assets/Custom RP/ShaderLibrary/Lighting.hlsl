@@ -1,11 +1,7 @@
 #ifndef CUSTOM_LIGHTING_INCLUDED
 #define CUSTOM_LIGHTING_INCLUDED
 #define AMBIENT_FACTOR 0.03
-#include "common.hlsl"
-#include "GI.hlsl"
-#include "Surface.hlsl"
-#include "Shadows.hlsl"
-#include "Light.hlsl"
+
 //lighting.hlsl is a utils class used for lighting model calculation.
 
 
@@ -25,7 +21,7 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false)
     #else
         brdf.diffuse = surface.color * (1 - F);
     #endif
-    brdf.specular = F ;
+    brdf.specular = F;
     return brdf;
 }
 
@@ -59,13 +55,15 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
 float3 GetLighting(Surface surface, BRDF brdf,GI gi)
 {
     float3 finalColor;
+    ShadowData shadowData = GetShadowData(surface);
+    shadowData.shadowMask = gi.shadowMask;
+    return gi.shadowMask.shadows.rgb;
+    finalColor = gi.diffuse * brdf.diffuse;
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
-        ShadowData shadowData = GetShadowData(surface);
         Light light = GetDirectionalLight(i,surface,shadowData);
         finalColor += GetLighting(surface, brdf, light);
     }
-    finalColor = gi.diffuse;
     return finalColor;
 }
 

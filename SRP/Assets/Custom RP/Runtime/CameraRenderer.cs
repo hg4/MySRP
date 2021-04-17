@@ -53,16 +53,23 @@ public partial class CameraRenderer
             criteria = SortingCriteria.CommonOpaque
         };
         var drawingSettings = new DrawingSettings(
-            unlitShaderTagId, sortingSettings
-        );
-        drawingSettings.perObjectData = PerObjectData.Lightmaps;
+             unlitShaderTagId, sortingSettings
+         )
+        {
+            enableInstancing = useGPUInstancing,
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+            PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume
+        };
+        //drawingSettings.sortingSettings = sortingSettings;
+        //drawingSettings.enableInstancing = useGPUInstancing;
+        //drawingSettings.perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
+        //    PerObjectData.LightProbe|PerObjectData.LightProbeProxyVolume;
         drawingSettings.SetShaderPassName(1, litShaderTagId);//add shader lightmode which this draw call can render
         _context.DrawRenderers(_cullingResults,ref drawingSettings, ref filteringSettings);
         DrawUnsupportedShaders();
         _context.DrawSkybox(_cam);
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
-        drawingSettings.enableInstancing = useGPUInstancing;
         filteringSettings.renderQueueRange = RenderQueueRange.transparent;
         _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
 

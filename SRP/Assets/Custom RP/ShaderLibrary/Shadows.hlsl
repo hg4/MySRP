@@ -1,8 +1,8 @@
 #ifndef CUSTOM_SHADOWS_INCLUDED
 #define CUSTOM_SHADOWS_INCLUDED
 
-#include "Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
+
 
 #if defined(_DIRECTIONAL_PCF3)
 #define DIRECTIONAL_FILTER_SAMPLES 4
@@ -20,6 +20,23 @@
 
 #define CONST_SEARCH_LENGTH 16
 #define BLOCKER_SEARCH_NUM_SAMPLES 16
+
+
+TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
+#define SHADOW_SAMPLER linear_clamp
+SAMPLER(SHADOW_SAMPLER);
+
+CBUFFER_START(Shadows)
+int _CascadeCount;
+
+float4 _ShadowDistanceFade;
+float4 _ShadowAtlasSize;
+float4 _CascadeData[MAX_CASCADE_COUNT];
+float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
+float4x4 _DirectionalShadowViewMatrices[MAX_CASCADE_COUNT * MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT];
+float4x4 _DirectionalShadowMatrices[MAX_CASCADE_COUNT * MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT];
+CBUFFER_END
+
 
 
 static const float2 poissonDisk[16] =
@@ -49,11 +66,18 @@ struct DirectionalShadowData
     float normalBias;
 };
 
+struct ShadowMask
+{
+    bool distance;
+    float4 shadows;
+};
+
 struct ShadowData
 {
     int cascadeIndex;
     float cascadeBlend;
     float strength;
+    ShadowMask shadowMask;
 };
 
 float FadedShadowStrength(float distance, float scale, float fade)
@@ -68,6 +92,8 @@ ShadowData GetShadowData(Surface surface)
     data.cascadeBlend = 1.0;
     data.strength = FadedShadowStrength(surface.depth, 
     _ShadowDistanceFade.x, _ShadowDistanceFade.y);
+    data.shadowMask.distance = false;   //not use bake shadow in realtime by default.
+    data.shadowMask.shadows = 1.0;
     int i;
     for (i = 0; i < _CascadeCount; i++)
     {
@@ -104,22 +130,19 @@ ShadowData GetShadowData(Surface surface)
     return data;
 }
 
-DirectionalShadowData GetDirectionalShadowData(int lightIndex ,ShadowData shadowData)
+
+float SampleDirectionalShadowAtlasDepth(float2 uv,bool useLod=false)
 {
-    DirectionalShadowData data;
-    data.strength = _DirectionalLightShadowData[lightIndex].x*shadowData.strength;
-    data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
-    data.normalBias = _DirectionalLightShadowData[lightIndex].z;
-    return data;
-}
-float SampleDirectionalShadowAtlasDepth(float2 uv)
-{
-    return SAMPLE_TEXTURE2D(_DirectionalShadowAtlas, SHADOW_SAMPLER, uv).r;
+    if(!useLod)
+        return SAMPLE_TEXTURE2D(_DirectionalShadowAtlas, SHADOW_SAMPLER, uv).r;
+    else
+        return SAMPLE_TEXTURE2D_LOD(_DirectionalShadowAtlas, SHADOW_SAMPLER, uv,0).r;
+
 }
 
-float SampleDirectionalShadowAtlas(float3 positionSTS)
+float SampleDirectionalShadowAtlas(float3 positionSTS, bool useLod = false)
 {
-    float depth = SampleDirectionalShadowAtlasDepth(positionSTS.xy);
+    float depth = SampleDirectionalShadowAtlasDepth(positionSTS.xy,useLod);
     #if defined(UNITY_REVERSED_Z)
         return positionSTS.z < depth ? 0 : 1;
     #else 
@@ -168,12 +191,27 @@ float PCF_Filter(float2 uv, float zReceiver, float filterRadiusUV)
     
     float sum = 0.0f;
 #if defined(_SHADOWS_PCSS)
-      for (int i = 0; i < 16; ++i)
+    
+    int len = filterRadiusUV / _ShadowAtlasSize.y;
+     
+    int cnt=0;
+    for (int x = -len/2; x <= len/2; ++x)
     {
-        float2 offset = poissonDisk[i] * filterRadiusUV*0.5;
-         sum += SampleDirectionalShadowAtlas(float3(uv + offset, zReceiver));
+        for(int y= -len/2; y <=len/2;++y)
+        {
+         float2 offset = float2(x*_ShadowAtlasSize.y,y*_ShadowAtlasSize.y);
+         sum += SampleDirectionalShadowAtlas(float3(uv + offset, zReceiver),true);
+         cnt+=1;
+        }
+           
     }
-    return sum / 16;
+    return sum / cnt;
+    //  for (int i = 0; i < 16; ++i)
+    //{
+    //    float2 offset = poissonDisk[i] * filterRadiusUV*0.5;
+    //     sum += SampleDirectionalShadowAtlas(float3(uv + offset, zReceiver));
+    //}
+    //return sum / 16;
 #elif defined(DIRECTIONAL_FILTER_SETUP)
     for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; ++i)
     {
@@ -230,6 +268,7 @@ float GetDirectionalShadowsAttenuation(Surface surface, DirectionalShadowData da
         normalBias = data.normalBias * surface.normal * _CascadeData[shadowData.cascadeIndex+1].y;
         positionSTS = mul(_DirectionalShadowMatrices[data.tileIndex], float4(surface.positionWS + normalBias, 1.0)).xyz;
         shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, shadowData.cascadeBlend);
+       // return 0.0;
     }
     return lerp(1.0, shadow, data.strength); //shadow = 1 means no shadowed ,otherwise shadow = 0 means fully shadowed. 
 }

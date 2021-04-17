@@ -14,6 +14,7 @@ public class Shadows
     ShadowSettings _shadowSettings;
     public const int maxShadowedDirectionalLightCount = 4,maxCascades = 4;
     public int shadowedDirectionalLightCount;
+    bool useShadowMask;
     struct ShadowedDirectionalLight
     {
         public int visibleLightIndex;
@@ -38,6 +39,9 @@ public class Shadows
         "_CASCADE_BLEND_SOFT",
         "_CASCADE_BLEND_DITHER"
     };
+    static string[] shadowMaskKeywords = {
+        "_SHADOW_MASK_DISTANCE"
+    };
     public static Vector4[] cascadeData = new Vector4[maxCascades];
     public static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
     public static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
@@ -47,6 +51,7 @@ public class Shadows
         _cullingResults = cullingResults;
         _context = context;
         _shadowSettings = shadowSettings;
+        useShadowMask = false;
         shadowedDirectionalLightCount = 0;
     }
 
@@ -63,6 +68,10 @@ public class Shadows
                 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap
             );//for solve webGL texture problem.
         }
+        _buffer.BeginSample(bufferName);
+        SetKeywords(shadowMaskKeywords, useShadowMask ? 0 : -1);
+        _buffer.EndSample(bufferName);
+        ExecuteBuffer();
     }
 
     private void RenderDirectionalShadows()
@@ -174,6 +183,12 @@ public class Shadows
             light.shadowStrength > 0.0f && light.shadows != LightShadows.None &&
             _cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
         {
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if(lightBaking.lightmapBakeType==LightmapBakeType.Mixed
+                && lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
+            {
+                useShadowMask = true;
+            }
             _shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight() 
             { visibleLightIndex = visibleLightIndex,
                 slopeScaleBias = light.shadowBias,
