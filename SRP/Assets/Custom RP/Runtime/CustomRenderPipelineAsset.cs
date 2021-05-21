@@ -7,10 +7,20 @@ using UnityEngine.Rendering;
 public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
     // Start is called before the first frame update
-    public bool useGPUInstancing=true, useSRPBatcher=true;
+    public bool useGPUInstancing = true, useSRPBatcher=true,
+        useLightsPerObject = false;
     public ShadowSettings shadows = default;
-    protected override RenderPipeline CreatePipeline()
+    [SerializeField]
+    PostFXSettings postFXSettings = default;
+    [SerializeField]
+    bool allowHDR = true;
+    public enum ColorLUTResolution { _16 = 16, _32 = 32, _64 = 64 }
+
+    [SerializeField]
+    ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
+    protected override RenderPipeline CreatePipeline()  
     {
-        return new CustomRenderingPipeline(useGPUInstancing,useSRPBatcher, shadows);
+        return new CustomRenderingPipeline(allowHDR, useGPUInstancing,useSRPBatcher,
+            useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution);
     }
 }

@@ -9,7 +9,10 @@ partial class CameraRenderer
     partial void PrepareBuffer();
     partial void PrepareForSceneWindow();
     partial void DrawUnsupportedShaders();
-    partial void DrawGizmos();
+    partial void DrawGizmosBeforeFX();
+
+    partial void DrawGizmosAfterFX();
+
 #if UNITY_EDITOR
     static ShaderTagId[] legacyShaderTagIds = {
         new ShaderTagId("Always"),
@@ -34,11 +37,17 @@ partial class CameraRenderer
 #endif
 
 #if UNITY_EDITOR
-    partial void DrawGizmos()
+    partial void DrawGizmosBeforeFX()
     {
         if (Handles.ShouldRenderGizmos())
         {
             _context.DrawGizmos(_cam, GizmoSubset.PreImageEffects);
+        }
+    }
+    partial void DrawGizmosAfterFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
             _context.DrawGizmos(_cam, GizmoSubset.PostImageEffects);
         }
     }

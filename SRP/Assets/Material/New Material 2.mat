@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: New Material 2
   m_Shader: {fileID: 4800000, guid: 565e82a3495f7d14f83f5479cbfcc4dc, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_PCSS
+  m_ShaderKeywords: _DETAIL_MAP _MASK_MAP _NORMAL_MAP _RECEIVE_SHADOWS _SHADOWS_PCSS
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -27,24 +27,36 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DetailMap:
+        m_Texture: {fileID: 2800000, guid: b9ae59347f27fc14c97e8ad8b381ed75, type: 3}
+        m_Scale: {x: 8, y: 4}
+        m_Offset: {x: 0, y: 0}
     - _DetailMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailNormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: e801ce5454192844b925a371fe79fa0f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 4db6e6864e76384448f701939655ce89, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 885cd9ff86458364bbc69a8cb106c050, type: 3}
+        m_Scale: {x: 2, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskMap:
+        m_Texture: {fileID: 2800000, guid: 33930b0be76205a4988e9cda3348b361, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: f8449d580f3129d4e95df00de84f89ea, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -60,18 +72,25 @@ Material:
     - _Clipping: 0
     - _CutOff: 0
     - _Cutoff: 0.5
+    - _DetailMapToggle: 1
     - _DetailNormalMapScale: 1
+    - _DetailNormalMapToggle: 0
+    - _DetailNormalScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Metallic: 0.103
+    - _IndirectSpecular: 0.372
+    - _MaskMapToggle: 1
+    - _Metallic: 1
     - _Mode: 0
+    - _NormalMapToggle: 1
+    - _NormalScale: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _PremultiAlpha: 0
     - _ReceiveShadows: 1
-    - _Roughness: 0.397
+    - _Roughness: 1
     - _Shadows: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -83,7 +102,7 @@ Material:
     - _premultiAlpha: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 0.9024145, b: 0.837, a: 1}
     - _DirectionalLightColor: {r: 0, g: 0, b: 0, a: 0}
     - _DirectionalLightDirection: {r: 0, g: 0, b: 0, a: 0}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}

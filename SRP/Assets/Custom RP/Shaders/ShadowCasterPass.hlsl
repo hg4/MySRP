@@ -14,7 +14,7 @@ struct Varyings_ShadowCaster
     float2 uv : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
-
+bool _ShadowPancaking;
 Varyings_ShadowCaster ShadowCasterPassVertex(Attributes_ShadowCaster input)
 {
     Varyings_ShadowCaster output;
@@ -23,14 +23,17 @@ Varyings_ShadowCaster ShadowCasterPassVertex(Attributes_ShadowCaster input)
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS = TransformWorldToHClip(positionWS);
     float4 uv_ST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MainTex_ST);
-#if UNITY_REVERSED_Z
-		output.positionCS.z =
-			min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-#else
-    output.positionCS.z =
-			max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-	#endif
-    output.uv = input.uv*uv_ST.xy + uv_ST.zw;
+    if (_ShadowPancaking)
+    {
+        #if UNITY_REVERSED_Z
+		        output.positionCS.z =
+			        min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+        #else
+                output.positionCS.z =
+			        max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+        #endif
+                output.uv = input.uv * uv_ST.xy + uv_ST.zw;
+    }
     return output;
 }
 

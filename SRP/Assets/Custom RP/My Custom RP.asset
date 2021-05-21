@@ -14,9 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useGPUInstancing: 1
   useSRPBatcher: 1
+  useLightsPerObject: 1
   shadows:
     maxDistance: 30
     distanceFade: 0.1
+    other:
+      atlasSize: 4096
+      filter: 2
     directional:
       cascadeFade: 0.1
       atlasSize: 4096
@@ -26,3 +30,5 @@ MonoBehaviour:
       cascadeRatio1: 0.3
       cascadeRatio2: 0.4
       cascadeRatio3: 0.5
+  postFXSettings: {fileID: 11400000, guid: 7a7df270477e8704f9a901cfc60ef798, type: 2}
+  allowHDR: 1

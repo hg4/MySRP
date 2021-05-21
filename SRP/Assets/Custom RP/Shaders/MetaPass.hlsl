@@ -37,9 +37,10 @@ Varyings MetaPassVertex(Attributes input)
 float4 MetaPassFragment(Varyings input) : SV_TARGET
 {
     float4 base = GetBaseColor(input.baseUV);
+    float4 col = GetBaseMap(input.baseUV);
     Surface surface;
     ZERO_INITIALIZE(Surface, surface);
-    surface.color = base.rgb;
+    surface.color = base.rgb * col.rgb;
     surface.metallic = GetMetallic(input.baseUV);
     surface.roughness = GetRoughness(input.baseUV);
     BRDF brdf = GetBRDF(surface);
