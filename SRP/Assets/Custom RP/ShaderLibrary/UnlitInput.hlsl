@@ -1,13 +1,20 @@
 #ifndef CUSTOM_UNLIT_INPUT_INCLUDED
 #define CUSTOM_UNLIT_INPUT_INCLUDED
 
-TEXTURE2D(_MainTex);
-SAMPLER(sampler_MainTex);
+Texture2D _MainTex;
+Texture2D _DistortionMap;
+SamplerState sampler_MainTex;
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _CutOff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeDistance)
+	UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeRange)
+    UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesDistance)
+	UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesRange)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DistortionStrength)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DistortionBlend)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float2 TransformBaseUV(float2 baseUV)

@@ -50,21 +50,6 @@ Varyings LitPassVertex(Attributes input)
     return output;
 }
 
-void ClipLOD(float2 positionSS, float fade)
-{
-#if defined(LOD_FADE_CROSSFADE)
-// Screen-door transparency: Discard pixel if below threshold.
-    float4x4 thresholdMatrix =
-    {  1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
-      13.0 / 17.0,  5.0 / 17.0, 15.0 / 17.0,  7.0 / 17.0,
-       4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
-      16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
-    };
-    float4x4 _RowAccess = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-    float2 pos = positionSS;
-    clip(fade - thresholdMatrix[fmod(pos.x, 4)] * _RowAccess[fmod(pos.y, 4)]);
-#endif
-}
 
 float4 LitPassFragment(Varyings input) : SV_Target
 {
@@ -75,8 +60,9 @@ float4 LitPassFragment(Varyings input) : SV_Target
     Surface surface;
     surface.positionWS = input.positionWS;
     surface.positionVS = TransformWorldToView(input.positionWS);
-    surface.positionCS = input.positionCS;
-    surface.positionSS = input.positionCS.xy / input.positionCS.w * _ScreenParams.xy;
+    surface.positionCS = TransformWorldToHClip(input.positionWS);
+    //vs->fs过程中硬件自动对varyings中的SV_POSITION做了CS->SS的转换
+    surface.positionSS = input.positionCS;
     ClipLOD(surface.positionSS, unity_LODFade.x);
     #if defined(_NORMAL_MAP)
         surface.normal = NormalTangentToWorld(

@@ -19,6 +19,7 @@ struct Surface
     float roughness;
     float metallic;
     float ao;
+    float lightmapMask;
 };
 struct BRDF
 {

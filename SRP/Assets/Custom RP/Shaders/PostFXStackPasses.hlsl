@@ -15,7 +15,8 @@ struct Attributes
 
 TEXTURE2D(_PostFXSource);
 TEXTURE2D(_PostFXSource2);
-SAMPLER(sampler_linear_clamp);
+sampler2D _CameraDepthNormalTexture;
+sampler2D _CameraDepthTexture;
 bool _BloomBicubicUpsampling;
 float _BloomIntensity;
 float4 _BloomThreshold;
@@ -328,4 +329,63 @@ float4 FinalPassFragment(Varyings input) : SV_TARGET
     color.rgb = ApplyColorGradingLUT(color.rgb);
     return color;
 }
+float4 CopyPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = GetSource(input.screenUV);
+    return color;
+}
+
+float4 _RimColor;
+float _RimLength;
+float _RimWidth;
+float _RimFeather;
+float _RimBlend;
+#include "../ShaderLibrary/ColorBlend.hlsl"
+#include "../ShaderLibrary/Light.hlsl"
+
+float DepthAttenuation(float depth)
+{
+    if(depth>1.0f)
+        return smoothstep(15.0f, 1.0f, depth);
+    else
+        return (9 / (depth + 2) - 2) * (9 / (depth + 2) - 2);
+}
+float4 RimLightPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = GetSource(input.screenUV);
+    float3 normal = tex2D(_CameraDepthNormalTexture, input.screenUV).rgb * 2 - 1;
+    float2 N_view = normalize(TransformWorldToViewDir(normal).xy);
+    float originDepth = tex2D(_CameraDepthTexture, input.screenUV).r;
+    float depth = LinearEyeDepth(originDepth, _ZBufferParams);
+
+    float3 rim = float3(0.0,0.0,0.0);
+    if (_DirectionalLightCount != 0)
+    {
+        float3 L = _DirectionalLightDirections[0];
+        //float3 V = _WorldSpaceCameraPos - inputs.positionWS;
+        float2 L_view = normalize(TransformWorldToViewDir(L).xy);
+        float NdotL = dot(N_view,L_view) + _RimLength;
+        float scale = (NdotL + 1) / 2 * _RimWidth * 0.01;
+        float2 uv = clamp(input.screenUV + N_view * scale * DepthAttenuation(depth),
+        0, _ScreenParams.xy / _ScreenParams.y);
+        float originDepth1 = tex2D(_CameraDepthTexture, uv).r;
+        float depth1 = LinearEyeDepth(originDepth1, _ZBufferParams);
+        float depthDiff = depth1 - depth;
+        float intensity = smoothstep(0.24 * _RimFeather * depth, 0.25 * depth, depthDiff);
+        if (intensity == 0.0)
+            return color;
+        rim = _RimColor.rgb * intensity * _DirectionalLightColors[0].rgb;
+        //rim = float3(depthDiff,0, 0);
+    }
+    //float depth, depth1;
+    //float3 normal, normal1;
+    ////DecodeDepthNormal(depthNormal, depth, normal);
+    //return float4(depthNormal.r, 1);
+   
+    color.rgb = lerp(color.rgb, rim, _RimBlend);
+    return color;
+    //return float4(rim, color.a);
+}
+
+
 #endif

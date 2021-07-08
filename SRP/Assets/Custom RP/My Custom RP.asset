@@ -32,3 +32,4 @@ MonoBehaviour:
       cascadeRatio3: 0.5
   postFXSettings: {fileID: 11400000, guid: 7a7df270477e8704f9a901cfc60ef798, type: 2}
   allowHDR: 1
+  colorLUTResolution: 32

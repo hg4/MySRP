@@ -27,7 +27,7 @@
 		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend ("Dst Blend", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
         [Toggle(_CLIPPING)] _Clipping("alpha clipping",Float) = 0
-        _CutOff("alpha cut off",Float) = 0.0
+        _Cutoff("alpha cut off",Float) = 0.0
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_PREMULTI_ALPHA)] _PremultiAlpha("premultiply alpha",float) = 0
@@ -41,6 +41,7 @@
         HLSLINCLUDE
         #include "../ShaderLibrary/Common.hlsl"
         #include "../ShaderLibrary/LitInput.hlsl"
+        #include "../ShaderLibrary/ColorBlend.hlsl"
         ENDHLSL
         LOD 100
 
@@ -97,6 +98,18 @@
 			#pragma fragment MetaPassFragment
 			#include "MetaPass.hlsl"
 			ENDHLSL
+        }
+
+        Pass
+        {
+            Tags { "LightMode" = "CustomGBuffer"}
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma multi_compile_instancing
+            #pragma vertex GBufferPassVertex
+			#pragma fragment GBufferPassFragment
+            #include "CustomGBufferPass.hlsl"
+            ENDHLSL
         }
     }
 

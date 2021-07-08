@@ -13,11 +13,17 @@ public partial class CameraRenderer
     CommandBuffer _buffer = new CommandBuffer { name = _bufferName };
     CullingResults _cullingResults;
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
-                       litShaderTagId = new ShaderTagId("CustomLit");
+                       litShaderTagId = new ShaderTagId("CustomLit"),
+                       ToonShaderTagId =  new ShaderTagId("CustomToon"),
+                       OutlineShaderTagId =  new ShaderTagId("CustomOutline");
     Lighting lighting = new Lighting();
     PostFXStack postFXStack = new PostFXStack();
-    static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
- 
+    CustomGBuffer customGBuffer = new CustomGBuffer();
+    static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
+    depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment"),
+    depthTextureId = Shader.PropertyToID("_CameraDepthTexture"),
+    colorTextureId = Shader.PropertyToID("_CameraColorTexture");
+    bool _useDepthTexture, _useColorTexture;
     public void Render(ScriptableRenderContext context,Camera camera,
         bool allowHDR , bool useGPUInstancing,
         bool useLightsPerObject, ShadowSettings shadowSettings, 
@@ -27,6 +33,7 @@ public partial class CameraRenderer
         _cam = camera;  
         _useHDR = allowHDR && camera.allowHDR;
         _colorLUTResolution = colorLUTResolution;
+        
         //PrepareBuffer();
         //PrepareForSceneWindow();
         if (!TryCull(shadowSettings)) return;
@@ -34,35 +41,75 @@ public partial class CameraRenderer
         ExecuteBuffer();//execute sample cmd. 只有在BeginSample函数被命令缓冲送去执行后会开启采样状态，在他执行后被送去执行的函数命令才会被sample记录
         lighting.Setup(context, _cullingResults, shadowSettings, useLightsPerObject);//sampled by 'render camera' buffer.
         postFXStack.Setup(context, camera, postFXSettings,_useHDR,colorLUTResolution);
+        customGBuffer.Setup(context, _cullingResults, camera, _useHDR, useGPUInstancing);
+        customGBuffer.Render();
         _buffer.EndSample(SampleName);//add end sample cmd to buffer
-        
+        //if(postFXStack.IsActive)
+        //{
+        //    SetupGBuffer();
+        //    DrawGBuffer(useGPUInstancing);
+        //    Submit();
+        //}
         Setup();//init some status in context
-        
         DrawVisibleGeometry(useGPUInstancing,useLightsPerObject);//draw command in context
         DrawGizmosBeforeFX();
         if (postFXStack.IsActive)
         {
-            postFXStack.Render(frameBufferId);
+            _useDepthTexture = true;
+            _useColorTexture = true;
+            postFXStack.Render(colorAttachmentId);
         }
         DrawGizmosAfterFX();
         Cleanup();
         Submit();//submit buffered command in context
     }
+    void CopyAttachments()
+    {
+        if (_useColorTexture)
+        {
+            _buffer.GetTemporaryRT(
+                colorTextureId, _cam.pixelWidth, _cam.pixelHeight,
+                0, FilterMode.Bilinear, _useHDR ?
+                    RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
+            );
+         
+            _buffer.CopyTexture(colorAttachmentId, colorTextureId);
+            ExecuteBuffer();
 
+        }
+        if (_useDepthTexture)
+        {
+            _buffer.GetTemporaryRT(
+                depthTextureId, _cam.pixelWidth, _cam.pixelHeight,
+                32, FilterMode.Point, RenderTextureFormat.Depth
+            );
+            _buffer.CopyTexture(depthAttachmentId, depthTextureId);
+        }
+        ExecuteBuffer();
+    }
+
+   
     private void Setup()
     {
         CameraClearFlags flags = _cam.clearFlags;
         _context.SetupCameraProperties(_cam);//set camera VP matrix to context status,we should setup camera before
                                              //renderTarget clear because renderTarget is bind with camera
                                              //to use secondary camera only to show legacy shader object, we determines whether clear renderTarget by camera's clear flag,which get different mixed effect by two camera.
+
         if (postFXStack.IsActive)
         {
             _buffer.GetTemporaryRT(
-                frameBufferId, _cam.pixelWidth, _cam.pixelHeight,
+                colorAttachmentId, _cam.pixelWidth, _cam.pixelHeight,
                 32, FilterMode.Bilinear, _useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
             );
+            _buffer.GetTemporaryRT(
+                depthAttachmentId, _cam.pixelWidth, _cam.pixelHeight,
+                32, FilterMode.Point, RenderTextureFormat.Depth
+            );
             _buffer.SetRenderTarget(
-                frameBufferId,
+                colorAttachmentId,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                depthAttachmentId,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
         }
@@ -93,14 +140,15 @@ public partial class CameraRenderer
             PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume |
             lightsPerObjectFlags
         };
-        //drawingSettings.sortingSettings = sortingSettings;
-        //drawingSettings.enableInstancing = useGPUInstancing;
-        //drawingSettings.perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
-        //    PerObjectData.LightProbe|PerObjectData.LightProbeProxyVolume;
+       
         drawingSettings.SetShaderPassName(1, litShaderTagId);//add shader lightmode which this draw call can render
+        drawingSettings.SetShaderPassName(2, ToonShaderTagId);
+        drawingSettings.SetShaderPassName(3, OutlineShaderTagId);
         _context.DrawRenderers(_cullingResults,ref drawingSettings, ref filteringSettings);
         DrawUnsupportedShaders();
         _context.DrawSkybox(_cam);
+        CopyAttachments();
+        //Debug.Log(_cam.worldToCameraMatrix);
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
         filteringSettings.renderQueueRange = RenderQueueRange.transparent;
@@ -142,9 +190,16 @@ public partial class CameraRenderer
     void Cleanup()
     {
         lighting.Cleanup();
+        customGBuffer.Cleanup();
         if (postFXStack.IsActive)
         {
-            _buffer.ReleaseTemporaryRT(frameBufferId);
+            _buffer.ReleaseTemporaryRT(colorAttachmentId);
+            _buffer.ReleaseTemporaryRT(depthAttachmentId);
+            //_buffer.ReleaseTemporaryRT(depthNormalTextureId);
+            if (_useDepthTexture)
+            {
+                _buffer.ReleaseTemporaryRT(depthTextureId);
+            }
         }
     }
 }

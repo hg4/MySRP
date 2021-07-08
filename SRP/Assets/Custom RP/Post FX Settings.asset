@@ -13,32 +13,48 @@ MonoBehaviour:
   m_Name: Post FX Settings
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 1ab8321ac3f0df442bef7860f4710bc3, type: 3}
-  toneMapping:
-    mode: 2
+  rimLight:
+    enableRim: 1
+    rimColor: {r: 0.915, g: 0.6781765, b: 0.6279412, a: 1}
+    rimLength: 1.87
+    rimWidth: 0.147
+    rimFeather: 1
+    rimBlend: 0.552
   bloom:
+    enableBloom: 1
     maxIterations: 2
-    bicubicUpsampling: 0
-    downscaleLimit: 3
-    threshold: 0.2
-    thresholdKnee: 0.038
-    intensity: 0.52
+    bicubicUpsampling: 1
+    downscaleLimit: 15
+    threshold: 0.91
+    thresholdKnee: 0.17
+    intensity: 1.27
     fadeFireflies: 1
-    mode: 0
-    scatter: 0.1
-  colorAdjustments:
-    postExposure: 0
-    contrast: 0
-    colorFilter: {r: 1, g: 1, b: 1, a: 0}
-    hueShift: 1
-    saturation: 0
-  whiteBalance:
-    temperature: 0
-    tint: 0
-  colorBalance:
-    shadows: {x: 0, y: -6.3, z: 0}
-    midtones: {x: 0, y: 0.4, z: 0}
-    highlights: {x: 0, y: 0, z: 0}
-  splitToning:
-    shadows: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
-    highlights: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    balance: 0
+    mode: 1
+    scatter: 0.302
+  colorGrading:
+    enableColorGrading: 1
+    toneMappingSettings:
+      mode: 2
+    colorAdjustmentsSettings:
+      postExposure: 0
+      contrast: 12.8
+      colorFilter: {r: 1, g: 1, b: 1, a: 0}
+      hueShift: 1
+      saturation: 2.8
+    whiteBalanceSettings:
+      temperature: 2.3
+      tint: 0
+    colorBalanceSettings:
+      shadows: {x: 0, y: -4.3, z: 0}
+      midtones: {x: 0, y: 0.61, z: 0}
+      highlights: {x: 0, y: 0.87, z: 0}
+    splitToningSettings:
+      shadows: {r: 0.47165567, g: 0.40244702, b: 0.48900002, a: 0}
+      highlights: {r: 0.49411765, g: 0.47444278, b: 0.45804706, a: 0}
+      balance: 15
+  fxaa:
+    enabled: 1
+    fixedThreshold: 0.0471
+    relativeThreshold: 0.189
+    subpixelBlending: 1
+    quality: 2

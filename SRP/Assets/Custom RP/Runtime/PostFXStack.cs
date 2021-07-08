@@ -31,17 +31,21 @@ public partial class PostFXStack
 		ColorGradingReinhard,
 		ColorGradingNeutral,
 		ColorGradingACES,
-		Final
+		RimLight,
+		Final,
+		Copy,
+		FXAA
 	}
 	const int maxBloomPyramidLevels = 16;
 	int bloomPyramidId;
 	int bloomBucibicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling"),
 		fxSourceId = Shader.PropertyToID("_PostFXSource"),
 		fxSource2Id = Shader.PropertyToID("_PostFXSource2"),
+		cameraDepthNormalTextureId = Shader.PropertyToID("_CameraDepthNormalTexture0"),
 		bloomThresholdId = Shader.PropertyToID("_BloomThreshold"),
 		bloomPrefilterId = Shader.PropertyToID("_BloomPrefilter"),
-		bloomResultId = Shader.PropertyToID("_BloomResult"),
-		bloomIntensityId = Shader.PropertyToID("_BloomIntensity"),
+        bloomResultId = Shader.PropertyToID("_BloomResult"),
+        bloomIntensityId = Shader.PropertyToID("_BloomIntensity"),
 		colorAdjustmentsId = Shader.PropertyToID("_ColorAdjustments"),
 		colorFilterId = Shader.PropertyToID("_ColorFilter"),
 		whiteBalanceId = Shader.PropertyToID("_WhiteBalance"),
@@ -52,8 +56,19 @@ public partial class PostFXStack
 		splitToningHighlightsId = Shader.PropertyToID("_SplitToningHighlights"),
 		colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT"),
 		colorGradingLUTParametersId = Shader.PropertyToID("_ColorGradingLUTParameters"),
-		colorGradingLUTInLogId = Shader.PropertyToID("_ColorGradingLUTInLogC");
-		
+		colorGradingLUTInLogId = Shader.PropertyToID("_ColorGradingLUTInLogC"),
+		rimColorId = Shader.PropertyToID("_RimColor"),
+		rimLengthId = Shader.PropertyToID("_RimLength"),
+		rimWidthId = Shader.PropertyToID("_RimWidth"),
+		rimFeatherId = Shader.PropertyToID("_RimFeather"),
+		rimBlendId = Shader.PropertyToID("_RimBlend"),
+		rimLightResultId = Shader.PropertyToID("_RimLightResult"),
+		colorGradingResultId = Shader.PropertyToID("_ColorGradingResult"),
+		fxaaConfigId = Shader.PropertyToID("_FXAAConfig"),
+		fxaaResultId = Shader.PropertyToID("_FXAAResult");
+	const string
+	fxaaQualityLowKeyword = "FXAA_QUALITY_LOW",
+	fxaaQualityMediumKeyword = "FXAA_QUALITY_MEDIUM";
 	public PostFXStack()
 	{
 		bloomPyramidId = Shader.PropertyToID("_BloomPyramid0");
@@ -171,21 +186,21 @@ public partial class PostFXStack
 	}
 	void ConfigureWhiteBalance()
 	{
-		WhiteBalanceSettings whiteBalance = settings.WhiteBalance;
+		WhiteBalanceSettings whiteBalance = settings.ColorGrading.whiteBalanceSettings;
 		buffer.SetGlobalVector(whiteBalanceId, ColorUtils.ColorBalanceToLMSCoeffs(
 			whiteBalance.temperature, whiteBalance.tint
 		));
 	}
 	void ConfigureColorBalance()
 	{
-		ColorBalanceSettings colorBalance = settings.ColorBalance;
+		ColorBalanceSettings colorBalance = settings.ColorGrading.colorBalanceSettings;
 		buffer.SetGlobalVector(colorBalanceShadowsId, colorBalance.shadows / 100.0f);
 		buffer.SetGlobalVector(colorBalanceMidtonesId, colorBalance.midtones / 100.0f);
 		buffer.SetGlobalVector(colorBalanceHighlightsId, colorBalance.highlights / 100.0f);
 	}
 	void ConfigureColorAdjustments()
 	{
-		ColorAdjustmentsSettings colorAdjustments = settings.ColorAdjustments;
+		ColorAdjustmentsSettings colorAdjustments = settings.ColorGrading.colorAdjustmentsSettings;
 		buffer.SetGlobalVector(colorAdjustmentsId, new Vector4(
 			Mathf.Pow(2f, colorAdjustments.postExposure),
 			colorAdjustments.contrast * 0.01f + 1f,
@@ -194,6 +209,38 @@ public partial class PostFXStack
 		));
 		buffer.SetGlobalColor(colorFilterId, colorAdjustments.colorFilter.linear);
 	}
+	void ConfigureRimLight()
+    {
+		RimLightSettings rimLight = settings.RimLight;
+		buffer.SetGlobalColor(rimColorId,rimLight.rimColor);
+		buffer.SetGlobalFloat(rimLengthId, rimLight.rimLength);
+		buffer.SetGlobalFloat(rimWidthId, rimLight.rimWidth);
+		buffer.SetGlobalFloat(rimFeatherId, rimLight.rimFeather);
+		buffer.SetGlobalFloat(rimBlendId, rimLight.rimBlend);
+	}
+	void ConfigureFXAA()
+	{
+		if (settings.fxaa.quality == FXAA.Quality.Low)
+		{
+			buffer.EnableShaderKeyword(fxaaQualityLowKeyword);
+			buffer.DisableShaderKeyword(fxaaQualityMediumKeyword);
+		}
+		else if (settings.fxaa.quality == FXAA.Quality.Medium)
+		{
+			buffer.DisableShaderKeyword(fxaaQualityLowKeyword);
+			buffer.EnableShaderKeyword(fxaaQualityMediumKeyword);
+		}
+		else
+		{
+			buffer.DisableShaderKeyword(fxaaQualityLowKeyword);
+			buffer.DisableShaderKeyword(fxaaQualityMediumKeyword);
+		}
+		buffer.SetGlobalVector(fxaaConfigId, new Vector4(
+			settings.fxaa.fixedThreshold, settings.fxaa.relativeThreshold, 
+			settings.fxaa.subpixelBlending
+		));
+	}
+
 	void DoColorGradingAndToneMapping(int sourceId)
 	{
 		ConfigureColorAdjustments();
@@ -209,7 +256,7 @@ public partial class PostFXStack
 		buffer.SetGlobalVector(colorGradingLUTParametersId, new Vector4(
 			lutHeight, 0.5f / lutWidth, 0.5f / lutHeight, lutHeight / (lutHeight - 1f)
 		));
-		ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
+		ToneMappingSettings.Mode mode = settings.ColorGrading.toneMappingSettings.mode;
 		Pass pass = Pass.ColorGradingNone + (int)mode;
 		buffer.SetGlobalFloat(
 			colorGradingLUTInLogId, useHDR && pass != Pass.ColorGradingNone ? 1f : 0f
@@ -221,12 +268,41 @@ public partial class PostFXStack
 			new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
 		);
 		buffer.SetGlobalTexture(fxSourceId, sourceId);
-		buffer.Blit(sourceId, BuiltinRenderTextureType.CameraTarget,settings.Material, (int)Pass.Final);
-		buffer.ReleaseTemporaryRT(colorGradingLUTId);
+        RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+        buffer.GetTemporaryRT(
+		colorGradingResultId, camera.pixelWidth, camera.pixelHeight, 0,
+		FilterMode.Bilinear, format,RenderTextureReadWrite.Default, 4
+		);
+		buffer.Blit(sourceId, colorGradingResultId, settings.Material, (int)Pass.Final);
+        //buffer.Blit(sourceId, BuiltinRenderTextureType.CameraTarget,settings.Material, (int)Pass.Final);
+        buffer.ReleaseTemporaryRT(colorGradingLUTId);
+	}
+	void DoRimLight(int sourceId)
+    {
+		ConfigureRimLight();
+		buffer.SetGlobalTexture(cameraDepthNormalTextureId, BuiltinRenderTextureType.Depth);
+		buffer.SetGlobalTexture(fxSourceId, sourceId);
+		RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+		buffer.GetTemporaryRT(
+		rimLightResultId, camera.pixelWidth, camera.pixelHeight, 0,
+		FilterMode.Bilinear, format, RenderTextureReadWrite.Default, 4);
+		buffer.Blit(sourceId, rimLightResultId, settings.Material, (int)Pass.RimLight);
+
+	}
+	void DoFXAA(int sourceId)
+    {
+		ConfigureFXAA();
+		RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+		buffer.SetGlobalTexture(fxSourceId, sourceId);
+		buffer.GetTemporaryRT(
+			fxaaResultId, camera.pixelWidth, camera.pixelHeight, 0,
+			FilterMode.Bilinear, format,RenderTextureReadWrite.Default,4
+		);
+		buffer.Blit(sourceId, fxaaResultId, settings.Material, (int)Pass.FXAA);
 	}
 	void ConfigureSplitToning()
 	{
-		SplitToningSettings splitToning = settings.SplitToning;
+		SplitToningSettings splitToning = settings.ColorGrading.splitToningSettings;
 		Color splitColor = splitToning.shadows;
 		splitColor.a = splitToning.balance * 0.01f;
 		buffer.SetGlobalColor(splitToningShadowsId, splitColor);
@@ -248,17 +324,44 @@ public partial class PostFXStack
 	{
 		//buffer.Blit(sourceId, BuiltinRenderTextureType.CameraTarget,
 		//	settings.Material,(int)Pass.Copy);
-		if (DoBloom(sourceId))
+		int temp = sourceId;
+		if (settings.rimLight.enableRim)
 		{
-			DoColorGradingAndToneMapping(bloomResultId);
-			buffer.ReleaseTemporaryRT(bloomResultId);
+			DoRimLight(temp);
+			temp = rimLightResultId;
 		}
-		else
-		{
-			DoColorGradingAndToneMapping(sourceId);
+		if (settings.Bloom.enableBloom)
+        {
+			DoBloom(temp);
+			temp = bloomResultId;
 		}
+		if(settings.ColorGrading.enableColorGrading)
+        {
+			DoColorGradingAndToneMapping(temp);
+			temp = colorGradingResultId;
+		}
+		if(settings.fxaa.enabled)
+        {
+			DoFXAA(temp);
+			temp = fxaaResultId;
+        }
+		buffer.SetGlobalTexture(fxSourceId, temp);
+		buffer.Blit(temp, BuiltinRenderTextureType.CameraTarget,settings.Material,(int)Pass.Copy);
+		Cleanup();
+        //buffer.ReleaseTemporaryRT(midResultId);
 		context.ExecuteCommandBuffer(buffer);
 		buffer.Clear();
+	}
+	public void Cleanup()
+    {
+		if (settings.Bloom.enableBloom)
+			buffer.ReleaseTemporaryRT(bloomResultId);
+		if (settings.ColorGrading.enableColorGrading)
+			buffer.ReleaseTemporaryRT(colorGradingLUTId);
+		if (settings.rimLight.enableRim)
+			buffer.ReleaseTemporaryRT(rimLightResultId);
+		if (settings.fxaa.enabled)
+			buffer.ReleaseTemporaryRT(fxaaResultId);
 	}
 
 }
