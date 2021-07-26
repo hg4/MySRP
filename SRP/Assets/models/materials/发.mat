@@ -110,7 +110,7 @@ Material:
     - _CutOff: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DiffuseEnvScale: 0.66
+    - _DiffuseEnvScale: 0.58
     - _DstBlend: 0
     - _EnableFaceLightMap: 0
     - _EnableLightMap: 0

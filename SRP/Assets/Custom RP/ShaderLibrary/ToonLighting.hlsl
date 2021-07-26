@@ -3,12 +3,16 @@
 
 float SampleFaceLightmap(float3 lightDir,float2 uv)
 {
-    float3 front = unity_ObjectToWorld._m02_m12_m22;
-    float3 right = unity_ObjectToWorld._m00_m10_m20;
-    float3 up = unity_ObjectToWorld._m01_m11_m21;
+    //float3 front = unity_ObjectToWorld._m02_m12_m22;
+    //float3 right = unity_ObjectToWorld._m00_m10_m20;
+    //float3 up = unity_ObjectToWorld._m01_m11_m21;
                   
-    float3 ProjectionToXZ = normalize(lightDir - up * dot(lightDir, up)); //projection to XZ plane in object space
-                    
+    //float3 ProjectionToXZ = normalize(lightDir - up * dot(lightDir, up)); //projection to XZ plane in object space
+    lightDir = TransformWorldToObjectDir(lightDir);
+    float3 front = float3(0, 0, 1);
+    float3 right = float3(1, 0, 0);
+    float3 up = float3(0, 1, 0);
+    float3 ProjectionToXZ = normalize(lightDir - up * dot(lightDir, up));
     float FrontLight = dot(normalize(front), ProjectionToXZ);
     float RightLight = dot(normalize(right), ProjectionToXZ);
                     

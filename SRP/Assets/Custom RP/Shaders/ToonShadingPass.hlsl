@@ -31,6 +31,7 @@ Varyings ToonShadingPassVertex(Attributes input)
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
+
     output.positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -41,6 +42,9 @@ Varyings ToonShadingPassVertex(Attributes input)
 
 float4 ToonShadingPassFragment(Varyings input) : SV_Target
 {
+    float4x4 viewMatrix = GetWorldToViewMatrix();
+    float4x4 modelMatrix = GetObjectToWorldMatrix();
+
     float3 V = normalize(_WorldSpaceCameraPos - input.positionWS);
     //float NdotV = saturate(dot(normalize(input.normalWS), V));
     float4 col = GetMainTex(input.uv);

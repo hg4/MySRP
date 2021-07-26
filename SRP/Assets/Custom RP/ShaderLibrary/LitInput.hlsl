@@ -14,9 +14,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-    UNITY_DEFINE_INSTANCED_PROP(float, _CutOff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
     UNITY_DEFINE_INSTANCED_PROP(float,_Metallic)
-    UNITY_DEFINE_INSTANCED_PROP(float,_Roughness)
+    UNITY_DEFINE_INSTANCED_PROP(float,_Roughness)   
     UNITY_DEFINE_INSTANCED_PROP(float,_IndirectSpecular)
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
@@ -73,7 +73,7 @@ float4 GetBaseColor(float2 baseUV)
 }
 float GetCutoff(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _CutOff);
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
 }
 
 float GetIndirectSpecular()
