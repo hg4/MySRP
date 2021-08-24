@@ -5,10 +5,12 @@
         [Header(General)]
         _BaseColor("Color",Color) = (1,1,1,1)
         _MainTex ("Texture", 2D) = "white" {}
+        [Toggle(_AO_LIGHT_MAP)]_EnableAO("enable ao light map",float) = 0
+        _AOLightMap("ao tex",2D) = "black" {}
         [Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float) = 2
         [Toggle(_CLIPPING)] _Clipping("alpha clipping",Float) = 0
         _Cutoff("alpha cut off",Float) = 0.5
-
+        _MaterialID("id value",Range(0,255)) = 0
         [Header(Outline)]
         _OutlineWidth("Outline width ",Range(0,1)) = 0.1
         _OutlineColor("Outline Color",Color) = (0,0,0,1)
@@ -23,15 +25,22 @@
         //_RimAttenuation("rim decay",Range(0.8,1.0)) = 0.9 
         [Toggle(_FACE_LIGHT_MAP)]_EnableFaceLightMap("Enable face Lightmap",float) = 0
         _LightMapTex("LightMap",2D) = "white" {}
+        _HairShadowLength("hair shadow length",Range(0,10)) = 4
+        //_DirectionScale("direction scale",Range(0.5,3)) = 1
+       
+        [Toggle(_PROJECTION_LIGHT)]_ProjectionLight("projection light",float) = 1
         [Toggle(_RAMP_SHADOW)]_EnableRampShadow("Enable Ramp Shadow",float) = 0
+        [Toggle(_RECEIVE_SHADOWS)]_ReceiveShadows("Receive Shadows",float) = 0
         [NoScaleOffset]_RampTex("Ramp Texture",2D) = "white" {}
         _ShadowColor("Shadow Color",Color) = (1,1,1,1)
         _MidColor("mid ramp color",Color) = (1,1,1,1)
         _ShadowThreshold("Shadow Range",Range(0,1)) = 0.5
         _ShadowSmooth("Shadow Smooth",Range(0,1)) = 0.2
         [Toggle(_USE_PBR)]_UsePBR("Combine PBR",float) = 0
-        [NoScaleOffset]_RoughnessTex("Roughness Texture",2D) = "black" {}
-        [NoScaleOffset]_MetallicTex("Metallic Texture",2D) = "black" {}
+        _Roughness("roughness",range(0.0,1.0)) = 0.5
+        [NoScaleOffset]_RoughnessTex("Roughness Texture",2D) = "white" {}
+        _Metallic("metallic",range(0.0,1.0)) = 0.0
+        [NoScaleOffset]_MetallicTex("Metallic Texture",2D) = "white" {}
         [NoScaleOffset]_IrradianceMap("irradiance cubemap for diffuse BRDF",Cube) = "_Skybox"{}
         [NoScaleOffset]_PrefilterMap("prefilter cubemap for specular BRDF",Cube) = "_Skybox"{}
         [NoScaleOffset]_BrdfLUT("LUT 2d texture",2D) = "white"{}
@@ -42,8 +51,7 @@
        
        // [Toggle]_EnablePBR("use pbr texture",float) = 0
        //_F0("fresnel",Vector) = (0.04,0.04,0.04)
-       // _roughness("roughness",Range(0.0,1.0)) = 0.0
-       //// _metallic("metallic",Range(0.0,1.0)) = 0.0
+      
        // [NoScaleOffset]_metallic("metallic texture for pbr",2D) ="black" {}
        // _diffuseEnvScale("diffuse scale",Range(0.0,2.0)) =1.0
        // [NoScaleOffset]_irradianceMap("irradiance cubemap for diffuse BRDF",Cube) = "_Skybox"{}
@@ -68,7 +76,9 @@
             #pragma target 3.5
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTI_ALPHA
-            #pragma shader_feature _SHADOWS_PCSS
+            #pragma shader_feature _AO_LIGHT_MAP
+            //#pragma shader_feature _SHADOWS_PCSS
+            #pragma shader_feature _PROJECTION_LIGHT
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _RAMP_SHADOW
             #pragma shader_feature _FACE_LIGHT_MAP
@@ -106,7 +116,7 @@
         Pass
         {
         Tags { "LightMode" = "ShadowCaster"}
-
+        
 			HLSLPROGRAM
             #pragma target 3.5
             #pragma shader_feature _SHADOWS_CLIP _SHADOWS_DITHER
@@ -126,6 +136,18 @@
             #pragma vertex GBufferPassVertex
 			#pragma fragment GBufferPassFragment
             #include "CustomGBufferPass.hlsl"
+            ENDHLSL
+        }
+           Pass
+        {
+            Tags {"LightMode" = "CustomSilhouette"}
+            HLSLPROGRAM
+            #pragma target 5.0 
+            #pragma multi_compile_instancing
+            #pragma vertex SilhouettePassVertex
+            #pragma geometry SilhouettePassGeometry
+            #pragma fragment SilhouettePassFragment
+            #include "CustomSilhouettePass.hlsl"
             ENDHLSL
         }
     }

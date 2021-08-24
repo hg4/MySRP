@@ -16,10 +16,16 @@ struct Surface
     float depth;
     float dither;
     float alpha;
+    float2 screenUV;
     float roughness;
     float metallic;
     float ao;
+#ifdef _FACE_LIGHT_MAP
     float lightmapMask;
+#endif
+#ifdef _AO_LIGHT_MAP
+    float aoMask;
+#endif 
 };
 struct BRDF
 {
@@ -29,8 +35,12 @@ struct BRDF
 
 float3 IndirectBRDF(Surface surface,BRDF brdf,float3 diffuse,float3 specular)
 {
-    float3 reflection = specular * brdf.specular;
-    reflection /= surface.roughness * surface.roughness + 1.0;
-    return (diffuse * brdf.diffuse + reflection)*surface.ao;
+    float3 V = surface.V;
+    float3 N = surface.normal;
+    float NdotV = saturate(dot(N, V));
+    float2 envBRDF = GetBrdfLUT(float2(NdotV, surface.roughness));
+    float3 reflection = specular * (brdf.specular * envBRDF.x + envBRDF.y);
+    //reflection /= surface.roughness * surface.roughness + 1.0;
+    return (diffuse * brdf.diffuse *M_PI + reflection)*surface.ao;
 }
 #endif

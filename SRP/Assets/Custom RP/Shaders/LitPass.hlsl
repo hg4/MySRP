@@ -73,18 +73,20 @@ float4 LitPassFragment(Varyings input) : SV_Target
         surface.originNormal = surface.normal;
     #endif
     surface.color = col.rgb * baseColor.rgb;
+    surface.screenUV = surface.positionSS / _ScreenParams.xy;
     surface.alpha = col.a;
     surface.depth = -TransformWorldToView(input.positionWS).z;
     surface.V = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
     surface.metallic = GetMetallic(input.uv);
-    surface.roughness = PerceptualRoughnessToRoughness(GetRoughness(input.uv,input.detailUV));
+    surface.roughness = GetRoughness(input.uv,input.detailUV);
     surface.ao = GetAO(input.uv);
     BRDF brdf = GetBRDF(surface);
     //return float4(brdf.specular, 1.0);
     GI gi = GetGI(GI_FRAGMENT_DATA(input),surface);
     float3 color = GetLighting(surface,brdf,gi);
     color += GetEmission(input.uv);
+
     //float4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 #ifdef _CLIPPING
         clip(col.a-GetCutoff(input.uv));

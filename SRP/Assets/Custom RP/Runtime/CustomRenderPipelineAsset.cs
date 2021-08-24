@@ -15,12 +15,13 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
     [SerializeField]
     bool allowHDR = true;
     public enum ColorLUTResolution { _16 = 16, _32 = 32, _64 = 64 }
-
+    [SerializeField]
+    MSAASamples MSAA = MSAASamples.None;
     [SerializeField]
     ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
     protected override RenderPipeline CreatePipeline()  
-    {
+    {               
         return new CustomRenderingPipeline(allowHDR, useGPUInstancing,useSRPBatcher,
-            useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution);
+            useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution,(int)MSAA);
     }
 }

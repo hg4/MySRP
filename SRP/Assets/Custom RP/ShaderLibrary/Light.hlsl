@@ -3,22 +3,7 @@
 
 #include "Surface.hlsl"
 #include "Shadows.hlsl"
-#define MAX_DIRECTIONAL_LIGHT_COUNT 4
-#define MAX_OTHER_LIGHT_COUNT 64
 
-CBUFFER_START(Lighting)//any name is ok,
-int _DirectionalLightCount;
-float _ShadowDistance;
-float3 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
-float3 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
-float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
-int _OtherLightCount;
-float3 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
-float4 _OtherLightPositions[MAX_OTHER_LIGHT_COUNT];
-float4 _OtherLightDirections[MAX_OTHER_LIGHT_COUNT];
-float4 _OtherLightSpotAngles[MAX_OTHER_LIGHT_COUNT];
-float4 _OtherLightShadowData[MAX_OTHER_LIGHT_COUNT];
-CBUFFER_END
 
 struct Light
 {

@@ -63,18 +63,27 @@ float4 ToonShadingPassFragment(Varyings input) : SV_Target
     //surface.roughness = 0.5;
     surface.alpha = col.a;
     surface.V = V;
+    surface.screenUV = surface.positionSS / _ScreenParams.xy;
     surface.originNormal = input.normalWS;
     surface.normal = input.normalWS;
+    surface.ao = 1.0;
+    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+    surface.depth = -TransformWorldToView(input.positionWS).z;
 #ifdef _FACE_LIGHT_MAP
     if(_DirectionalLightCount != 0){
         surface.lightmapMask = SampleFaceLightmap(normalize(_DirectionalLightDirections[0].xyz),input.uv);    
     }
-    
 #endif
+    #ifdef _AO_LIGHT_MAP
+    surface.aoMask = GetAOLightMap(input.uv).r;
+    #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
     float3 color = GetToonLighting(surface, gi ,input.color);
     //if(NdotV <0.1)
     //    return float4(1.0, 1.0, 1.0, 1.0);
+    //return float4(surface.normal * 0.5 + 0.5, 1.0);
+    //return input.color;
+    //return float4(1, 1, 1, 1);
     return float4(color, 1.0);
     //return input.color;
 }

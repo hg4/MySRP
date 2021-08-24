@@ -19,39 +19,7 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-float ApplyOutlineDistanceFadeOut(float positionVS_Z)
-{
-    #ifdef UNITY_REVERSED_Z
-        positionVS_Z = abs(positionVS_Z);
-    #endif
-    positionVS_Z = smoothstep(25.0, 0.5f, positionVS_Z);
-    return positionVS_Z * 0.01;
-}
 
-float4 GetNewClipPosWithZOffset(float4 originalPositionCS, float viewSpaceZOffsetAmount)
-{
-    if (unity_OrthoParams.w == 0)
-    {
-        ////////////////////////////////
-        //Perspective camera case
-        ////////////////////////////////
-        float2 ProjM_ZRow_ZW = UNITY_MATRIX_P[2].zw;
-        float modifiedPositionVS_Z = -originalPositionCS.w + -viewSpaceZOffsetAmount; // push imaginary vertex
-        float modifiedPositionCS_Z = modifiedPositionVS_Z * ProjM_ZRow_ZW[0] + ProjM_ZRow_ZW[1];
-        //-modifiedPositionVS_Z = modifiedPositionCS.w, here make modifiedPositionCS_Z value scale to origin.w
-        originalPositionCS.z = modifiedPositionCS_Z * originalPositionCS.w / (-modifiedPositionVS_Z);
-        
-        return originalPositionCS;
-    }
-    else
-    {
-        ////////////////////////////////
-        //Orthographic camera case
-        ////////////////////////////////
-        originalPositionCS.z += (-viewSpaceZOffsetAmount) / _ProjectionParams.z; // push imaginary vertex and overwrite positionCS.z
-        return originalPositionCS;
-    }
-}
 Varyings OutlinePassVertex(Attributes input)
 {
     Varyings output;
@@ -65,8 +33,8 @@ Varyings OutlinePassVertex(Attributes input)
     //positionWS += normalWS * _OutlineWidth * ApplyOutlineDistanceFadeOut(positionVS.z);
     output.postionCS = TransformWorldToHClip(positionWS);
     
-    float3 scale = GetModelScaleMatrix();
-    float3 extension = normalCS * scale;
+    //float3 scale = GetModelScaleMatrix();
+    float3 extension = normalCS;
 
     //float aspect = _ScreenParams.y / _ScreenParams.x;
     //extension.x *= aspect;

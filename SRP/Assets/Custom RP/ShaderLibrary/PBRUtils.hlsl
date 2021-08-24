@@ -54,38 +54,5 @@ float GeometrySmith(float3 N, float3 V, float L, float alpha)
     //float ggx2 = smithG_GGX_disney(NdotL, alpha);
     return ggx1 * ggx2;
 }
-void PbrBRDF(float3 N,float3 L, Surface surface,
-            inout float3 diffuse, inout float3 specular)
-{
-    float3 V = surface.V;
-    float roughness = surface.roughness;
-    float metallic = surface.metallic;
-    float3 albedo = surface.color;
-    float NdotL = saturate(dot(N, L));
-    float NdotV = saturate(dot(N, V));
 
-    
-    float3 H = normalize(L + V);
-    float NdotH = saturate(dot(N, H));
-    float3 R = reflect(-V, N);
-    float HdotV = saturate(dot(H, V));
-    float NDF = D_GTR2(NdotH, roughness);
-    float G = GeometrySmith(N, V, L, roughness);
-    float3 F = float3(0.04, 0.04, 0.04);
-    F = lerp(F, albedo, metallic);
-    F = Fresnel_Schlick(HdotV, F);
-    float3 ks = F;
-    float3 kd = (1 - metallic) * (1 - F);
-    float denominator = 4.0 * NdotV * NdotL;
-    float3 spec = NDF * G * F / (denominator + 0.001);
-    float3 prefilteredColor = GetPrefilterMap(R);
-    float2 envBRDF = GetBrdfLUT(float2(NdotV, roughness));
-    float3 irradiance = GetIrradianceMap(N);
-    float3 diffuseEnv = GetDiffuseEnvScale() * kd * irradiance * 3.1415926;
-    float3 specularEnv = metallic * prefilteredColor * (F * envBRDF.x + envBRDF.y);
-    diffuse = diffuseEnv;
-    specular = (spec + specularEnv) * GetSpecularEnvScale();
-    //specular = specular / (specular + 1);
-
-}
 #endif

@@ -6,8 +6,14 @@
         _MainTex ("Texture", 2D) = "white" {}
         _Color("main color",COLOR) = (0.5,0.5,0.5,1.0)
         _Metallic("metallic",Range(0,1)) = 0.1
+        [NoScaleOffset]_MetallicTex("matal texture",2D) = "white" {}
         _Roughness("roughness",Range(0,1)) =0.5
+        [NoScaleOffset]_RoughnessTex("rough texture",2D) = "white" {}
         _IndirectSpecular("indirect GI",Range(0,1)) = 0.5
+        [NoScaleOffset]_IrradianceMap("irradiance cubemap for diffuse BRDF",Cube) = "_Skybox"{}
+        [NoScaleOffset]_PrefilterMap("prefilter cubemap for specular BRDF",Cube) = "_Skybox"{}
+        [NoScaleOffset]_BrdfLUT("LUT 2d texture",2D) = "white"{}
+        _CustomId("id value",Range(0,255)) = 0
         [Toggle(_MASK_MAP)] _MaskMapToggle ("Mask Map", Float) = 0
         [NoScaleOffset] _MaskMap("Mask(MODS)",2D) = "white" {}
 
@@ -75,7 +81,6 @@
         Pass
         {
         Tags { "LightMode" = "ShadowCaster"}
-
 			HLSLPROGRAM
             #pragma target 3.5
             #pragma shader_feature _SHADOWS_CLIP _SHADOWS_DITHER
@@ -109,6 +114,19 @@
             #pragma vertex GBufferPassVertex
 			#pragma fragment GBufferPassFragment
             #include "CustomGBufferPass.hlsl"
+            ENDHLSL
+        }
+        Pass
+        {
+            Tags {"LightMode" = "CustomSilhouette"}
+            ZTest Always
+            HLSLPROGRAM
+            #pragma target 5.0
+            #pragma multi_compile_instancing
+            #pragma vertex SilhouettePassVertex
+            #pragma geometry SilhouettePassGeometry
+            #pragma fragment SilhouettePassFragment
+            #include "CustomSilhouettePass.hlsl"
             ENDHLSL
         }
     }

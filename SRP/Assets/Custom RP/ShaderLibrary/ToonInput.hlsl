@@ -7,6 +7,7 @@ TEXTURE2D(_RoughnessTex);
 TEXTURE2D(_MetallicTex);
 TEXTURE2D(_BrdfLUT);
 TEXTURE2D(_LightMapTex);
+TEXTURE2D(_AOLightMap);
 TEXTURE2D(_OutlineZOffsetMask);
 TEXTURECUBE(_IrradianceMap);
 TEXTURECUBE(_PrefilterMap);
@@ -17,6 +18,7 @@ SAMPLER(sampler_LightMapTex);
 SAMPLER(sampler_BrdfLUT);
 SAMPLER(sampler_IrradianceMap);
 SAMPLER(sampler_PrefilterMap);
+SAMPLER(sampler_AOLightMap);
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float,_OutlineWidth)
@@ -33,6 +35,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4,_LightMapTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float,_DiffuseEnvScale)
     UNITY_DEFINE_INSTANCED_PROP(float,_SpecularEnvScale)
+    UNITY_DEFINE_INSTANCED_PROP(float,_Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float,_Roughness)
     
 
     //UNITY_DEFINE_INSTANCED_PROP(float4,_RimColor)
@@ -105,12 +109,13 @@ float3 GetFaceLightmap(float2 uv)
 }
 float GetRoughness(float2 uv)
 {
-    return SAMPLE_TEXTURE2D(_RoughnessTex, sampler_MainTex, uv).r;
+    return SAMPLE_TEXTURE2D(_RoughnessTex, sampler_MainTex, uv).r * UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Roughness);
     
 }
 float GetMetallic(float2 uv)
 {
-    return SAMPLE_TEXTURE2D(_MetallicTex, sampler_MainTex, uv).r;    
+    return SAMPLE_TEXTURE2D(_MetallicTex, sampler_MainTex, uv).r *
+    UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
 }
 float2 GetBrdfLUT(float2 uv)
 {
@@ -132,6 +137,10 @@ float GetDiffuseEnvScale()
 float GetSpecularEnvScale()
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SpecularEnvScale);   
+}
+float GetAOLightMap(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_AOLightMap, sampler_AOLightMap, uv).r;
 }
 //float4 GetRimColor()
 //{

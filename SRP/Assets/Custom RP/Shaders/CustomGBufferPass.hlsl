@@ -1,6 +1,7 @@
 #ifndef CUSTOM_GBUFFER_INCLUDED
 #define CUSTOM_GBUFFER_INCLUDED
 
+float _MaterialID;
 struct Attributes
 {
     float3 positionOS : POSITION;
@@ -26,13 +27,13 @@ Varyings GBufferPassVertex(Attributes input)
     TransformObjectToWorldNormal(input.normalOS));
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionVS = TransformWorldToView(positionWS);
-    output.normalDepth.w = -(output.positionCS.z * _ProjectionParams.w);
+    output.normalDepth.w = output.positionCS.z * _ProjectionParams.w;
     return output;
 }
 
 float4 GBufferPassFragment(Varyings input) : SV_Target
 {
     float3 normal_packed = normalize(input.normalDepth.xyz) * 0.5 + 0.5;
-    return float4(normal_packed, input.normalDepth.w);
+    return float4(normal_packed.xy, _MaterialID/255,input.positionCS.z);
 }
 #endif

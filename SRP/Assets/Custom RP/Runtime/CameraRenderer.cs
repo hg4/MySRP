@@ -9,17 +9,19 @@ public partial class CameraRenderer
     Camera _cam;
     bool _useHDR;
     int _colorLUTResolution;
+    int _msaaSamples;
     const string _bufferName = "Render camera";
     CommandBuffer _buffer = new CommandBuffer { name = _bufferName };
     CullingResults _cullingResults;
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
                        litShaderTagId = new ShaderTagId("CustomLit"),
-                       ToonShaderTagId =  new ShaderTagId("CustomToon"),
-                       OutlineShaderTagId =  new ShaderTagId("CustomOutline");
+                       toonShaderTagId =  new ShaderTagId("CustomToon"),
+                       outlineShaderTagId =  new ShaderTagId("CustomOutline"),
+                        silhouetteShaderTagId = new ShaderTagId("CustomSilhouette");
     Lighting lighting = new Lighting();
     PostFXStack postFXStack = new PostFXStack();
     CustomGBuffer customGBuffer = new CustomGBuffer();
-    static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
+    public static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
     depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment"),
     depthTextureId = Shader.PropertyToID("_CameraDepthTexture"),
     colorTextureId = Shader.PropertyToID("_CameraColorTexture");
@@ -27,13 +29,13 @@ public partial class CameraRenderer
     public void Render(ScriptableRenderContext context,Camera camera,
         bool allowHDR , bool useGPUInstancing,
         bool useLightsPerObject, ShadowSettings shadowSettings, 
-        PostFXSettings postFXSettings, int colorLUTResolution)
+        PostFXSettings postFXSettings, int colorLUTResolution, int msaaSamples)
     {
         _context = context;
         _cam = camera;  
         _useHDR = allowHDR && camera.allowHDR;
         _colorLUTResolution = colorLUTResolution;
-        
+        _msaaSamples = camera.allowMSAA ? msaaSamples : 1;
         //PrepareBuffer();
         //PrepareForSceneWindow();
         if (!TryCull(shadowSettings)) return;
@@ -44,19 +46,12 @@ public partial class CameraRenderer
         customGBuffer.Setup(context, _cullingResults, camera, _useHDR, useGPUInstancing);
         customGBuffer.Render();
         _buffer.EndSample(SampleName);//add end sample cmd to buffer
-        //if(postFXStack.IsActive)
-        //{
-        //    SetupGBuffer();
-        //    DrawGBuffer(useGPUInstancing);
-        //    Submit();
-        //}
         Setup();//init some status in context
         DrawVisibleGeometry(useGPUInstancing,useLightsPerObject);//draw command in context
         DrawGizmosBeforeFX();
         if (postFXStack.IsActive)
         {
-            _useDepthTexture = true;
-            _useColorTexture = true;
+
             postFXStack.Render(colorAttachmentId);
         }
         DrawGizmosAfterFX();
@@ -65,27 +60,24 @@ public partial class CameraRenderer
     }
     void CopyAttachments()
     {
-        if (_useColorTexture)
+        if (postFXStack.IsActive || _msaaSamples > 1)
         {
             _buffer.GetTemporaryRT(
-                colorTextureId, _cam.pixelWidth, _cam.pixelHeight,
-                0, FilterMode.Bilinear, _useHDR ?
-                    RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
-            );
-         
+               colorTextureId, _cam.pixelWidth, _cam.pixelHeight,
+               0, FilterMode.Bilinear, _useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default,
+               RenderTextureReadWrite.Default,_msaaSamples
+           );
+
             _buffer.CopyTexture(colorAttachmentId, colorTextureId);
             ExecuteBuffer();
-
-        }
-        if (_useDepthTexture)
-        {
             _buffer.GetTemporaryRT(
                 depthTextureId, _cam.pixelWidth, _cam.pixelHeight,
                 32, FilterMode.Point, RenderTextureFormat.Depth
             );
             _buffer.CopyTexture(depthAttachmentId, depthTextureId);
+            ExecuteBuffer();
         }
-        ExecuteBuffer();
+        
     }
 
    
@@ -142,8 +134,9 @@ public partial class CameraRenderer
         };
        
         drawingSettings.SetShaderPassName(1, litShaderTagId);//add shader lightmode which this draw call can render
-        drawingSettings.SetShaderPassName(2, ToonShaderTagId);
-        drawingSettings.SetShaderPassName(3, OutlineShaderTagId);
+        drawingSettings.SetShaderPassName(2, toonShaderTagId);
+        drawingSettings.SetShaderPassName(3, outlineShaderTagId);
+        //drawingSettings.SetShaderPassName(4, silhouetteShaderTagId);
         _context.DrawRenderers(_cullingResults,ref drawingSettings, ref filteringSettings);
         DrawUnsupportedShaders();
         _context.DrawSkybox(_cam);

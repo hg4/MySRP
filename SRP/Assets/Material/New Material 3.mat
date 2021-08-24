@@ -9,16 +9,21 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: New Material 3
   m_Shader: {fileID: 4800000, guid: 565e82a3495f7d14f83f5479cbfcc4dc, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON _SHADOWS_PCSS
+  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2000
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - CustomSilhouette
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BrdfLUT:
+        m_Texture: {fileID: 2800000, guid: d5e11bbe6088bf444a07703b2196f353, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -43,6 +48,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _IrradianceMap:
+        m_Texture: {fileID: 8900000, guid: 3713db0a1e2d9464f9758cb9404ffbe4, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -52,6 +61,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -67,9 +80,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PrefilterMap:
+        m_Texture: {fileID: 8900000, guid: 5a83acc213bc0554298572464b120c73, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
     - _Clipping: 0
+    - _CustomId: 0
     - _CutOff: 0
     - _Cutoff: 0.5
     - _DetailMapToggle: 0
@@ -82,7 +104,7 @@ Material:
     - _IndirectFactor: 0.552
     - _IndirectSpecular: 0
     - _MaskMapToggle: 0
-    - _Metallic: 0.262
+    - _Metallic: 0.339
     - _Mode: 0
     - _NormalMapToggle: 0
     - _NormalScale: 1
@@ -90,14 +112,14 @@ Material:
     - _Parallax: 0.02
     - _PremultiAlpha: 0
     - _ReceiveShadows: 1
-    - _Roughness: 0.5
+    - _Roughness: 0.385
     - _Shadows: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _pcss: 1
+    - _pcss: 0
     m_Colors:
-    - _Color: {r: 0.59222, g: 0.57450986, b: 0.7869999, a: 0.21960784}
+    - _Color: {r: 0.831, g: 0.52436095, b: 0.6198846, a: 0.21960784}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

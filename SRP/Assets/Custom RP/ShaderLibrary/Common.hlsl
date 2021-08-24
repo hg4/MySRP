@@ -9,7 +9,7 @@
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
 #define UNITY_MATRIX_P glstate_matrix_projection
-
+#define M_PI 3.1415926 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
@@ -80,5 +80,80 @@ float3 GetModelScaleMatrix()
     return float3(a, b, c);
     //return transpose(unity_ObjectToWorld)[3];
     //return float3(unity_ObjectToWorld[3][3], unity_ObjectToWorld[3][3], unity_ObjectToWorld[3][3]);
+}
+
+float ApplyOutlineDistanceFadeOut(float positionVS_Z)
+{
+#ifdef UNITY_REVERSED_Z
+        positionVS_Z = abs(positionVS_Z);
+#endif
+    positionVS_Z = smoothstep(25.0, 0.5f, positionVS_Z);
+    return positionVS_Z * 0.01;
+}
+float3 DecodeNormal(float2 normalRG)
+{
+    float3 normal = float3(0, 0, 0);
+    normal.xy = normalRG.xy * 2 -1;
+    normal.z = sqrt(1 - dot(normal.xy, normal.xy));
+    return normal;
+}
+float4 GetNewClipPosWithZOffset(float4 originalPositionCS, float viewSpaceZOffsetAmount)
+{
+    if (unity_OrthoParams.w == 0)
+    {
+        ////////////////////////////////
+        //Perspective camera case
+        ////////////////////////////////
+        float2 ProjM_ZRow_ZW = UNITY_MATRIX_P[2].zw;
+        float modifiedPositionVS_Z = -originalPositionCS.w + -viewSpaceZOffsetAmount; // push imaginary vertex
+        float modifiedPositionCS_Z = modifiedPositionVS_Z * ProjM_ZRow_ZW[0] + ProjM_ZRow_ZW[1];
+        //-modifiedPositionVS_Z = modifiedPositionCS.w, here make modifiedPositionCS_Z value scale to origin.w
+        originalPositionCS.z = modifiedPositionCS_Z * originalPositionCS.w / (-modifiedPositionVS_Z);
+        
+        return originalPositionCS;
+    }
+    else
+    {
+        ////////////////////////////////
+        //Orthographic camera case
+        ////////////////////////////////
+        originalPositionCS.z += (-viewSpaceZOffsetAmount) / _ProjectionParams.z; // push imaginary vertex and overwrite positionCS.z
+        return originalPositionCS;
+    }
+}
+
+float DepthAttenuation(float depth)
+{
+    if (depth > 1.0f)
+        return smoothstep(15.0f, 1.0f, depth);
+    else
+        return (9 / (depth + 2) - 2) * (9 / (depth + 2) - 2);
+}
+float3 ProjectionVectorToLocalXZ(float3 v)
+{
+    v = TransformWorldToObjectDir(v);
+    float3 front = float3(0, 0, 1);
+    float3 right = float3(1, 0, 0);
+    float3 up = float3(0, 1, 0);
+    float3 projectionToXZ = normalize(v - up * dot(v, up));
+    return projectionToXZ;
+}
+float3 ProjectionVectorToLocalYZ(float3 v)
+{
+    v = TransformWorldToObjectDir(v);
+    float3 front = float3(0, 0, 1);
+    float3 right = float3(1, 0, 0);
+    float3 up = float3(0, 1, 0);
+    float3 projectionToYZ = normalize(v - right * dot(v, right));
+    return projectionToYZ;
+}
+float3 ProjectionVectorToLocalXY(float3 v)
+{
+    v = TransformWorldToObjectDir(v);
+    float3 front = float3(0, 0, 1);
+    float3 right = float3(1, 0, 0);
+    float3 up = float3(0, 1, 0);
+    float3 projectionToXY = normalize(v - front * dot(v, front));
+    return projectionToXY;
 }
 #endif

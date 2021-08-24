@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 112ffd3c5b85ce24997af687871b6615, type: 3}
+  m_Name: pbr post setting
+  m_EditorClassIdentifier: 
+  shader: {fileID: 4800000, guid: 1ab8321ac3f0df442bef7860f4710bc3, type: 3}
+  rimLight:
+    enableRim: 0
+    rimColor: {r: 1, g: 1, b: 1, a: 1}
+    rimLength: 0
+    rimWidth: 0.1
+    rimFeather: 1
+    rimBlend: 1
+  bloom:
+    enableBloom: 0
+    maxIterations: 0
+    bicubicUpsampling: 0
+    downscaleLimit: 0
+    threshold: 0
+    thresholdKnee: 0
+    intensity: 0
+    fadeFireflies: 1
+    mode: 0
+    scatter: 0.07
+  colorGrading:
+    enableColorGrading: 0
+    toneMappingSettings:
+      mode: 3
+    colorAdjustmentsSettings:
+      postExposure: 0
+      contrast: 3.7
+      colorFilter: {r: 1, g: 1, b: 1, a: 1}
+      hueShift: 0
+      saturation: 0
+    whiteBalanceSettings:
+      temperature: -6.4
+      tint: 0
+    colorBalanceSettings:
+      shadows: {x: 0, y: 0, z: 0}
+      midtones: {x: 0, y: 0, z: 0}
+      highlights: {x: 1.58, y: 0.46, z: 0}
+    splitToningSettings:
+      shadows: {r: 0.45882353, g: 0.42077348, b: 0.34503528, a: 1}
+      highlights: {r: 0.5381988, g: 0.5377412, b: 0.6117647, a: 1}
+      balance: -8.7
+  fxaa:
+    enabled: 1
+    fixedThreshold: 0.0481
+    relativeThreshold: 0.159
+    subpixelBlending: 1
+    quality: 2

@@ -7,9 +7,17 @@ TEXTURE2D(_MaskMap);
 TEXTURE2D(_DetailMap);
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_DetailNormalMap);
+TEXTURE2D(_MetallicTex);
+TEXTURE2D(_RoughnessTex);
+TEXTURECUBE(_IrradianceMap);
+TEXTURECUBE(_PrefilterMap);
+TEXTURE2D(_BrdfLUT);
 SAMPLER(sampler_MainTex);
 SAMPLER(sampler_DetailMap);
 SAMPLER(sampler_EmissionMap);
+SAMPLER(sampler_BrdfLUT);
+SAMPLER(sampler_IrradianceMap);
+SAMPLER(sampler_PrefilterMap);
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
@@ -44,6 +52,15 @@ float4 GetMask(float2 baseUV)
     #else
     return float4(1.0, 1.0, 1.0, 0.0);
     #endif
+}
+float GetRoughnessTex(float2 baseUV)
+{
+    return SAMPLE_TEXTURE2D(_RoughnessTex, sampler_MainTex, baseUV).r;
+}
+
+float GetMetallicTex(float2 baseUV)
+{
+    return SAMPLE_TEXTURE2D(_MetallicTex, sampler_MainTex, baseUV).r;
 }
 float4 GetDetailMap(float2 baseUV)
 {
@@ -83,13 +100,13 @@ float GetIndirectSpecular()
 
 float GetMetallic(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic) * GetMask(baseUV).r;
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic) * GetMetallicTex(baseUV);
 }
 
 float GetRoughness(float2 baseUV,float2 detailUV = 0.0)
 {
     float roughness =  UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Roughness) 
-    * (1-GetMask(baseUV).a);
+    * GetRoughnessTex(baseUV);
     #if defined(_DETAIL_MAP)
         float detail = GetDetailMap(detailUV).b;
         float mask = GetMask(baseUV).b;
@@ -102,7 +119,18 @@ float GetAO(float2 baseUV)
 {
     return GetMask(baseUV).g;
 }
-
+float2 GetBrdfLUT(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_BrdfLUT, sampler_BrdfLUT, uv).rg;
+}
+float3 GetIrradianceMap(float3 uvw)
+{
+    return SAMPLE_TEXTURECUBE(_IrradianceMap, sampler_IrradianceMap, uvw).rgb;
+}
+float3 GetPrefilterMap(float3 uvw)
+{
+    return SAMPLE_TEXTURECUBE(_PrefilterMap, sampler_PrefilterMap, uvw).rgb;
+}
 float3 GetNormalTS(float2 baseUV, float2 detailUV = 0.0)
 {
     float4 map = SAMPLE_TEXTURE2D(_NormalMap, sampler_MainTex, baseUV);

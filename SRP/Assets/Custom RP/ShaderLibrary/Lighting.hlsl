@@ -3,7 +3,7 @@
 #define AMBIENT_FACTOR 0.03
 
 //lighting.hlsl is a utils class used for lighting model calculation.
-
+#include "PBRUtils.hlsl"
 
 //get light radiance distribution for surface
 float3 IncomingLight(Surface surface, Light light)
@@ -23,13 +23,13 @@ float3 FresnelSchlick(float HdotV, float3 F)
 //get diffuse and specular base color
 BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false)
 {
-    float3 F = lerp(F0, surface.color, surface.metallic);
+    float3 F = lerp(float3(F0,F0,F0), surface.color, surface.metallic);
     F = FresnelSchlickRoughness(saturate(dot(surface.normal, surface.V)), F,surface.roughness);
     BRDF brdf;
     #ifdef _PREMULTI_ALPHA
-        brdf.diffuse = surface.color * (1 - F)  * (1 - surface.metallic) * surface.alpha;
+        brdf.diffuse = surface.color * (1 - F)  * (1 - surface.metallic) * surface.alpha/M_PI;
     #else
-        brdf.diffuse = surface.color * (1 - F) * (1 - surface.metallic);
+        brdf.diffuse = surface.color * (1 - F) * (1 - surface.metallic)/M_PI;
     #endif
         brdf.specular = F;
     return brdf;
@@ -39,13 +39,13 @@ BRDF GetBRDFWithLight(Surface surface, Light light, bool applyAlphaToDiffuse = f
 {
     float3 H = SafeNormalize(light.direction + surface.V);
     float HdotV = saturate(dot(H, surface.V));
-    float3 F = lerp(F0, surface.color, surface.metallic);
+    float3 F = lerp(float3(0.04,0.04,0.04), surface.color, surface.metallic);
     F = FresnelSchlick(HdotV, F);
     BRDF brdf;
 #ifdef _PREMULTI_ALPHA
-        brdf.diffuse = surface.color * (1 - F)  * (1 - surface.metallic) * surface.alpha;
+        brdf.diffuse = surface.color * (1 - F)  * (1 - surface.metallic) * surface.alpha/M_PI ;
 #else
-    brdf.diffuse = surface.color * (1 - F) * (1 - surface.metallic);
+    brdf.diffuse = surface.color * (1 - F) * (1 - surface.metallic) /M_PI;
 #endif
     brdf.specular = F;
     return brdf;
@@ -63,21 +63,53 @@ float SpecularStrength(Surface surface, BRDF brdf, Light light)
     return r2 / (d2 * max(0.1, lh2) * normalization);
 }
 
+float specularBRDF(Surface surface, BRDF brdf, Light light)
+{
+    float3 H = SafeNormalize(light.direction + surface.V);
+    float3 V = surface.V;
+    float3 N = surface.normal;
+    float3 L = light.direction;
+    float NdotL = saturate(dot(N, L));
+    float NdotV = saturate(dot(N, V));
+    float NdotH = saturate(dot(N, H));
+    float HdotV = saturate(dot(H, V));
+    float NDF = D_GTR2(NdotH, surface.roughness);
+    float G = GeometrySmith(N, V, L, surface.roughness);
+    float F = brdf.specular;
+    float denominator = 4.0 * NdotV * NdotL;
+    return NDF * G * F / (denominator + 0.001);
+    
+    
+}
 // brdf_lit use lambert diffuse BRDF(without pi) and Minimalist CookTorrance specular BRDF
 float3 BRDF_Lit(Surface surface, BRDF brdf, Light light)
 {
-    return brdf.specular * SpecularStrength(surface, brdf, light) + brdf.diffuse;
+    return specularBRDF(surface, brdf, light) + brdf.diffuse;
 }
-float3 GetAmbient(Surface surface)
+float3 GetAmbient(Surface surface,BRDF brdf)
 {
-    return surface.color * AMBIENT_FACTOR * (1 - surface.roughness) * (1 - surface.metallic);
+    //float3 V = surface.V;
+    //float3 N = surface.normal;
+    //float roughness = surface.roughness;
+    //float metallic = surface.metallic;
+    //float NdotV = saturate(dot(N, V));
+    //float3 R = reflect(-V, N);
+    //float3 F = brdf.specular;
+    //float3 prefilteredColor = SampleEnvironment(surface);
+    //float2 envBRDF = GetBrdfLUT(float2(NdotV, roughness));
+    //float3 irradiance = GetIrradianceMap(N);
+    //float3 diffuseEnv = (1 - metallic) * (1 - F) * irradiance * surface.color;
+    //float3 specularEnv = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+    //return surface.ao*(diffuseEnv + specularEnv);
+    return surface.ao * AMBIENT_FACTOR * surface.color;
+
 }
 
 float3 GetLighting(Surface surface, Light light)
 {
    
-    BRDF brdf = GetBRDFWithLight(surface, light);
-    return IncomingLight(surface, light) * BRDF_Lit(surface, brdf, light) + GetAmbient(surface);
+    BRDF brdf = GetBRDF(surface);
+    return IncomingLight(surface, light) * BRDF_Lit(surface, brdf, light) + GetAmbient(surface,brdf);
 }
 
 float3 GetLighting(Surface surface, BRDF brdf,GI gi)
@@ -85,7 +117,9 @@ float3 GetLighting(Surface surface, BRDF brdf,GI gi)
     float3 finalColor;
     ShadowData shadowData = GetShadowData(surface);
     shadowData.shadowMask = gi.shadowMask;  
+    finalColor = float3(0, 0, 0);
     finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
+   
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i,surface,shadowData);

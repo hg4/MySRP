@@ -345,9 +345,10 @@ public partial class PostFXStack
 			DoFXAA(temp);
 			temp = fxaaResultId;
         }
-		buffer.SetGlobalTexture(fxSourceId, temp);
-		buffer.Blit(temp, BuiltinRenderTextureType.CameraTarget,settings.Material,(int)Pass.Copy);
-		Cleanup();
+        buffer.SetGlobalTexture(fxSourceId, temp);
+		buffer.SetGlobalTexture(CameraRenderer.colorTextureId, temp);
+        buffer.Blit(temp, CameraRenderer.colorTextureId, settings.Material, (int)Pass.Copy);
+        Cleanup();
         //buffer.ReleaseTemporaryRT(midResultId);
 		context.ExecuteCommandBuffer(buffer);
 		buffer.Clear();

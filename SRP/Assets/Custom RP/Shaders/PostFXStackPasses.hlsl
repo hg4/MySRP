@@ -341,19 +341,14 @@ float _RimWidth;
 float _RimFeather;
 float _RimBlend;
 #include "../ShaderLibrary/ColorBlend.hlsl"
-#include "../ShaderLibrary/Light.hlsl"
 
-float DepthAttenuation(float depth)
-{
-    if(depth>1.0f)
-        return smoothstep(15.0f, 1.0f, depth);
-    else
-        return (9 / (depth + 2) - 2) * (9 / (depth + 2) - 2);
-}
+
+
 float4 RimLightPassFragment(Varyings input) : SV_TARGET
 {
     float4 color = GetSource(input.screenUV);
-    float3 normal = tex2D(_CameraDepthNormalTexture, input.screenUV).rgb * 2 - 1;
+    float2 normalRG = tex2D(_CameraDepthNormalTexture, input.screenUV).rg;
+    float3 normal = DecodeNormal(normalRG);
     float2 N_view = normalize(TransformWorldToViewDir(normal).xy);
     float originDepth = tex2D(_CameraDepthTexture, input.screenUV).r;
     float depth = LinearEyeDepth(originDepth, _ZBufferParams);

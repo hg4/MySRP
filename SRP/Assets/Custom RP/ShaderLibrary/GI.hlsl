@@ -117,9 +117,9 @@ GI GetGI(float2 lightMapUV, Surface surface)
 {
     GI gi;
     //debug to show 
-    gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surface);
+    gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surface) + GetIrradianceMap(surface.normal);
     //gi.specular = SampleEnvironment(surface) * GetIndirectSpecular();
-    gi.specular = SampleEnvironment(surface) * 0.1;
+    gi.specular = SampleEnvironment(surface);
     gi.shadowMask.always = false;
     gi.shadowMask.distance = false;
     gi.shadowMask.shadows = 1.0;
