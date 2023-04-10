@@ -45,7 +45,7 @@ float SampleFaceLightmap(float3 lightDir,float2 uv)
                     
     //uv.y += _OffsetY;
     float3 lightMap = RightLight < 0 ? GetFaceLightmap(uv) : GetFaceLightmap(float2(1.0 - uv.x, uv.y));
-    float shadowMask = (lightMap.r > 0.5 - 0.5 * FrontLight); //math derived
+    float shadowMask = smoothstep(-0.005,0.005,lightMap.r - (0.5 - 0.5 * FrontLight)); //math derived
     //return lightDir *0.5 +0.5;
     return shadowMask;
 }
@@ -127,12 +127,15 @@ float3 GetToonLighting(Surface surface, Light light,float4 col)
         float rampB = smoothstep( smooth / 2,smooth, v);
         float ramp = rampA - rampB;
         baseColor = GetBaseColor().rgb * surface.color * light.color.rgb;
+        #ifdef _HIGHLIGHT_MASK
+        baseColor = surface.highlightMask >0.5 ? GetHighlightColor().rgb : baseColor;
+        #endif
         midColor = GetMidColor().rgb * surface.color * light.color.rgb;
         shadowColor = GetShadowColor().rgb * surface.color * light.color.rgb;
         if (v < smooth / 2)
             color = lerp(shadowColor, midColor, ramp);
         else
-            color = lerp(baseColor, midColor, ramp);
+        color = lerp(baseColor, midColor, ramp);
         //color = v > 0 & v<= 0.01 ? float3(1, 1, 1) : float3(0, 0, 0);
     #endif
     #ifdef _AO_LIGHT_MAP
@@ -142,6 +145,7 @@ float3 GetToonLighting(Surface surface, Light light,float4 col)
      //   color = surface.aoMask == 1 ? color == shadowColor ? darkColor : shadowColor : color;
         color = surface.aoMask == 1 ? shadowColor : color;
     #endif
+
     #ifdef _USE_PBR
         float3 diffuse = float3(0,0,0);
         float3 specular = float3(0,0,0);

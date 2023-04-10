@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: New Material 3
   m_Shader: {fileID: 4800000, guid: 565e82a3495f7d14f83f5479cbfcc4dc, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON
+  m_ShaderKeywords: _NORMAL_MAP _RECEIVE_SHADOWS _SHADOWS_ON
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -106,7 +106,7 @@ Material:
     - _MaskMapToggle: 0
     - _Metallic: 0.339
     - _Mode: 0
-    - _NormalMapToggle: 0
+    - _NormalMapToggle: 1
     - _NormalScale: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02

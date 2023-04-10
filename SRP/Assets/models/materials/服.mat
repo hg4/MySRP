@@ -52,6 +52,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _HighlightMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _IrradianceMap:
         m_Texture: {fileID: 8900000, guid: 3713db0a1e2d9464f9758cb9404ffbe4, type: 2}
         m_Scale: {x: 1, y: 1}
@@ -152,7 +156,7 @@ Material:
     - _OcclusionStrength: 1
     - _OffsetY: 0
     - _Outline: 1.46
-    - _OutlineWidth: 0.177
+    - _OutlineWidth: 1
     - _OutlineZOffsetMaskRemapEnd: 1
     - _OutlineZOffsetMaskRemapStart: 0
     - _OutlineZOffsetStrength: 0
@@ -170,6 +174,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _UseHighLight: 0
     - _UsePBR: 1
     - _ZOffset: 1
     - _ZWrite: 1
@@ -184,7 +189,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _F0: {r: 0.04, g: 0.04, b: 0.04, a: 1}
+    - _HighlightColor: {r: 1, g: 1, b: 1, a: 1}
     - _MidColor: {r: 0.7928471, g: 0.79650134, b: 0.8156863, a: 1}
-    - _OutlineColor: {r: 0.22299574, g: 0.184759, b: 0.277, a: 1}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.71808, g: 0.73206854, b: 0.816, a: 1}
     - _rimColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

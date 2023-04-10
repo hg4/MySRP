@@ -5,6 +5,9 @@
         [Header(General)]
         _BaseColor("Color",Color) = (1,1,1,1)
         _MainTex ("Texture", 2D) = "white" {}
+        [Toggle(_HIGHLIGHT_MASK)]_UseHighLight("enable high light",float) = 0
+        _HighlightColor("high light color",Color) = (1,1,1,1)
+        _HighlightMask("high light mask tex",2D) = "black" {}
         [Toggle(_AO_LIGHT_MAP)]_EnableAO("enable ao light map",float) = 0
         _AOLightMap("ao tex",2D) = "black" {}
         [Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float) = 2
@@ -82,6 +85,7 @@
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _RAMP_SHADOW
             #pragma shader_feature _FACE_LIGHT_MAP
+            #pragma shader_feature _HIGHLIGHT_MASK
             #pragma shader_feature _RIM
             #pragma shader_feature _USE_PBR
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER

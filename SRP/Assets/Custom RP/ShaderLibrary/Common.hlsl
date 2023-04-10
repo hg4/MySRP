@@ -28,7 +28,7 @@ float DistanceSquared(float3 pA, float3 pB)
 float3 DecodeNormal(float4 sample, float scale)
 {
 #if defined(UNITY_NO_DXT5nm)
-	    return UnpackNormalRGB(sample, scale);
+	return UnpackNormalRGB(sample, scale);
 #else
     return UnpackNormalmapRGorAG(sample, scale);
 #endif

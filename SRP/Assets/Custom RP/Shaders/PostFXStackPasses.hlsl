@@ -348,11 +348,14 @@ float4 RimLightPassFragment(Varyings input) : SV_TARGET
 {
     float4 color = GetSource(input.screenUV);
     float2 normalRG = tex2D(_CameraDepthNormalTexture, input.screenUV).rg;
+    float id = tex2D(_CameraDepthNormalTexture, input.screenUV).b * 255;
+    if(id < 200)
+        return color;
     float3 normal = DecodeNormal(normalRG);
     float2 N_view = normalize(TransformWorldToViewDir(normal).xy);
     float originDepth = tex2D(_CameraDepthTexture, input.screenUV).r;
     float depth = LinearEyeDepth(originDepth, _ZBufferParams);
-
+    
     float3 rim = float3(0.0,0.0,0.0);
     if (_DirectionalLightCount != 0)
     {

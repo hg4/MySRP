@@ -3,6 +3,7 @@
 
 TEXTURE2D(_MainTex);
 TEXTURE2D(_RampTex);
+TEXTURE2D(_HighlightMask);
 TEXTURE2D(_RoughnessTex);
 TEXTURE2D(_MetallicTex);
 TEXTURE2D(_BrdfLUT);
@@ -13,6 +14,7 @@ TEXTURECUBE(_IrradianceMap);
 TEXTURECUBE(_PrefilterMap);
 SAMPLER(sampler_MainTex);
 SAMPLER(sampler_RampTex);
+SAMPLER(sampler_HighlightMask);
 SAMPLER(sampler_OutlineZOffsetMask);
 SAMPLER(sampler_LightMapTex);
 SAMPLER(sampler_BrdfLUT);
@@ -23,6 +25,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
     UNITY_DEFINE_INSTANCED_PROP(float,_OutlineWidth)
     UNITY_DEFINE_INSTANCED_PROP(float4,_OutlineColor)
+    UNITY_DEFINE_INSTANCED_PROP(float4,_HighlightColor)
     UNITY_DEFINE_INSTANCED_PROP(float,_OutlineZOffsetStrength)
     UNITY_DEFINE_INSTANCED_PROP(float,_OutlineZOffsetMaskRemapStart)
     UNITY_DEFINE_INSTANCED_PROP(float,_OutlineZOffsetMaskRemapEnd)
@@ -73,6 +76,10 @@ float4 GetShadowColor()
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ShadowColor);
 }
+float4 GetHighlightColor()
+{
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HighlightColor);
+}
 float4 GetBaseColor()
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
@@ -106,6 +113,10 @@ float3 GetFaceLightmap(float2 uv)
 {
     return SAMPLE_TEXTURE2D(_LightMapTex, sampler_LightMapTex, TransformLightMapTexUV(uv)).rgb;
     
+}
+float GetHighlightMask(float2 uv)
+{
+    return SAMPLE_TEXTURE2D(_HighlightMask, sampler_HighlightMask, uv).r;
 }
 float GetRoughness(float2 uv)
 {

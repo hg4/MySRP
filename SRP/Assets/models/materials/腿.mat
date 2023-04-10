@@ -19,6 +19,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOLightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BrdfLUT:
         m_Texture: {fileID: 2800000, guid: d5e11bbe6088bf444a07703b2196f353, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -40,6 +44,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HighlightMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -112,6 +120,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DiffuseEnvScale: 1
     - _DstBlend: 0
+    - _EnableAO: 0
     - _EnableFaceLightMap: 0
     - _EnableLightMap: 0
     - _EnablePBR: 0
@@ -120,17 +129,21 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
+    - _HairShadowLength: 4
+    - _MaterialID: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _OffsetY: 0
     - _Outline: 1.46
-    - _OutlineWidth: 0.308
+    - _OutlineWidth: 1
     - _OutlineZOffsetMaskRemapEnd: 1
     - _OutlineZOffsetMaskRemapStart: 0
     - _OutlineZOffsetStrength: 0
     - _Parallax: 0.02
+    - _ProjectionLight: 1
     - _ReceiveShadows: 1
+    - _Roughness: 0.5
     - _ShadowRange: 0.455
     - _ShadowSmooth: 0.214
     - _ShadowThreshold: 0.356
@@ -139,6 +152,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _UseHighLight: 0
     - _UsePBR: 0
     - _ZOffset: 1
     - _ZWrite: 1
@@ -151,7 +165,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _F0: {r: 0.04, g: 0.04, b: 0.04, a: 1}
+    - _HighlightColor: {r: 1, g: 1, b: 1, a: 1}
     - _MidColor: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor: {r: 0.135, g: 0.12498372, b: 0.117315, a: 1}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.645, g: 0.5497891, b: 0.21994497, a: 1}
     - _rimColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

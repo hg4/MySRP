@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 1ab8321ac3f0df442bef7860f4710bc3, type: 3}
   rimLight:
-    enableRim: 0
+    enableRim: 1
     rimColor: {r: 0.90800005, g: 0.62216663, b: 0.56023604, a: 1}
-    rimLength: 1.37
-    rimWidth: 0.205
+    rimLength: 0.97
+    rimWidth: 0.189
     rimFeather: 1
-    rimBlend: 0.218
+    rimBlend: 0.297
   bloom:
-    enableBloom: 0
+    enableBloom: 1
     maxIterations: 3
     bicubicUpsampling: 0
     downscaleLimit: 1
@@ -32,7 +32,7 @@ MonoBehaviour:
     mode: 1
     scatter: 0.302
   colorGrading:
-    enableColorGrading: 0
+    enableColorGrading: 1
     toneMappingSettings:
       mode: 3
     colorAdjustmentsSettings:

@@ -133,7 +133,7 @@ float4 SilhouettePassFragment(Varyings input) : SV_Target
     
     float linearDepth = LinearEyeDepth(originDepth, _ZBufferParams);
     float lineLinearDepth = LinearEyeDepth(input.positionCS.z, _ZBufferParams);
-    float zoffset = input.zoffset > 0.5 ? (input.zoffset - 1) *0.002 : 0.002*input.zoffset;
+    float zoffset = input.zoffset > 0.5 ? (input.zoffset - 1) * 0.002 : 0.002 * input.zoffset;
     zoffset *= _VertexColorScale;
     if (abs(lineLinearDepth) + zoffset > abs(linearDepth))
         discard;

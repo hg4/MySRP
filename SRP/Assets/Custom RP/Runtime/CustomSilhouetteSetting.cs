@@ -36,6 +36,7 @@ public class CustomSilhouetteSetting : MonoBehaviour
     private Mesh bake_mesh;                       // 用于接收动态网格
     private Material material;                    // 动态网格用到的描边材质，由预置材质实例化生成
     private Renderer mesh_renderer;
+    private SkinnedMeshRenderer skinnedMeshRenderer;
     private MeshFilter filter;
     private CommandBuffer buffer;         // 指令缓存
     private List<Vector3> mesh_vertices;          // 网格顶点，用来接收动态网格的顶点信息
@@ -63,6 +64,19 @@ public class CustomSilhouetteSetting : MonoBehaviour
         if(lineTex == null)
             lineTex = Texture2D.whiteTexture;
         buffer_manager = new MaterialBufferManager(filter.sharedMesh, degraded_rectangles.degradedRectangles, material);
+
+        //if (filter != null)
+        //    buffer_manager = new MaterialBufferManager(filter.sharedMesh, degraded_rectangles.degradedRectangles, material);
+        //else if (mesh_renderer.GetType() == typeof(SkinnedMeshRenderer))
+        //{
+        //    skinnedMeshRenderer = (SkinnedMeshRenderer)mesh_renderer;
+        //    buffer_manager = new MaterialBufferManager(skinnedMeshRenderer.sharedMesh, degraded_rectangles.degradedRectangles, material);
+        //}
+        //else
+        //{
+        //    Debug.LogError("No mesh!");
+        //    buffer_manager = new MaterialBufferManager(bake_mesh, degraded_rectangles.degradedRectangles, material);
+        //}
         degraded_rectangles_count = buffer_manager.GetLines().count;
 
    
@@ -81,6 +95,12 @@ public class CustomSilhouetteSetting : MonoBehaviour
         }
         if (lineTex == null)
             lineTex = Texture2D.whiteTexture;
+        //if (skinnedMeshRenderer != null)
+        //{
+        //    skinnedMeshRenderer.BakeMesh(bake_mesh);
+        //    bake_mesh.GetVertices(mesh_vertices);
+        //    buffer_manager.GetVertices().SetData(mesh_vertices);
+        //}
         //mesh_renderer.BakeMesh(bake_mesh);
         //bake_mesh.GetVertices(mesh_vertices);
         //buffer_manager.GetVertices().SetData(mesh_vertices);

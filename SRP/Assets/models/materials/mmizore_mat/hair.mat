@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: hair
   m_Shader: {fileID: 4800000, guid: 881b3fbf413c8e943bd333b2a2ffa0e2, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS
+  m_ShaderKeywords: _HIGHLIGHT_MASK _RECEIVE_SHADOWS
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -49,6 +49,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HighlightMask:
+        m_Texture: {fileID: 2800000, guid: 1cc9b53c0a5bbb147a6c0ca8072658c8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _IrradianceMap:
@@ -116,7 +120,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0.105
+    - _OutlineWidth: 0.071
     - _OutlineZOffsetMaskRemapEnd: 1
     - _OutlineZOffsetMaskRemapStart: 0
     - _OutlineZOffsetStrength: 0
@@ -125,12 +129,13 @@ Material:
     - _ReceiveShadows: 1
     - _Roughness: 0.5
     - _ShadowSmooth: 0.029
-    - _ShadowThreshold: 0.75
+    - _ShadowThreshold: 0.668
     - _SmoothnessTextureChannel: 0
     - _SpecularEnvScale: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _UseHighLight: 1
     - _UsePBR: 0
     - _ZOffset: 0
     - _ZWrite: 1
@@ -140,6 +145,7 @@ Material:
     - _BaseColor: {r: 0.32016394, g: 0.3477049, b: 0.42, a: 1}
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _HighlightColor: {r: 0.40096, g: 0.42190042, b: 0.56, a: 1}
     - _MidColor: {r: 0.2509804, g: 0.27058825, b: 0.32156864, a: 1}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.013829999, g: 0.018155273, b: 0.03, a: 1}
     - _ShadowColor: {r: 0.2509804, g: 0.2709804, b: 0.32156864, a: 1}

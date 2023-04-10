@@ -26,6 +26,9 @@ struct Surface
 #ifdef _AO_LIGHT_MAP
     float aoMask;
 #endif 
+#ifdef _HIGHLIGHT_MASK
+    float highlightMask;
+#endif
 };
 struct BRDF
 {

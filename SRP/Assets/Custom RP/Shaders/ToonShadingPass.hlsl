@@ -77,6 +77,9 @@ float4 ToonShadingPassFragment(Varyings input) : SV_Target
     #ifdef _AO_LIGHT_MAP
     surface.aoMask = GetAOLightMap(input.uv).r;
     #endif
+    #ifdef _HIGHLIGHT_MASK
+        surface.highlightMask = GetHighlightMask(input.uv);
+    #endif 
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
     float3 color = GetToonLighting(surface, gi ,input.color);
     //if(NdotV <0.1)
